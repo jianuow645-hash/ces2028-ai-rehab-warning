@@ -8,7 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           colors: {
@@ -17,15 +16,6 @@
               500: '#06b6d4',
               600: '#0891b2',
               900: '#164e63',
-            },
-            cyber: {
-              bg: '#ffffff',
-              card: '#f3f4f6',
-              border: '#e5e7eb',
-              accent: '#3b82f6',
-              danger: '#ef4444',
-              warning: '#f59e0b',
-              success: '#10b981',
             }
           }
         }
@@ -44,6 +34,7 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    :root { color-scheme: light; }
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background-color: #ffffff;
@@ -59,9 +50,7 @@
     }
     .glass-panel {
       background: #f3f4f6;
-      backdrop-filter: blur(12px);
       border: 1px solid #e5e7eb;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     }
     /* iPad Safari Touch Highlight Fix */
     nav button, button {
@@ -73,14 +62,14 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+      background: #f3f4f6;
     }
     ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
+      background: #d1d5db;
       border-radius: 3px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
+      background: #9ca3af;
     }
   </style>
 </head>
@@ -93,40 +82,27 @@
   </div>
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200 px-4 py-3 flex flex-wrap justify-between items-center gap-4 shadow-sm">
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200 px-4 py-3 flex flex-wrap justify-between items-center gap-4">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-cyan-500/20">
         <i class="fa-solid fa-heart-pulse"></i>
       </div>
       <div>
         <h1 id="txt-app-title" class="text-base sm:text-lg font-bold text-gray-900 tracking-wide">基于人机双态感知的AI康复训练二次损伤风险预警系统</h1>
-        <p id="txt-app-subtitle" class="text-xs text-gray-500">CES 2028 Interactive Exhibition Demo | Real-Time MediaPipe Edge Vision</p>
+        <p id="txt-app-subtitle" class="text-xs text-gray-600">CES 2028 Interactive Exhibition Demo | Real-Time MediaPipe Edge Vision</p>
       </div>
     </div>
 
-    <!-- Navigation Tab Buttons Bar -->
-    <nav class="flex flex-wrap items-center gap-1.5 bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs">
-      <button onclick="switchTab('home')" id="nav-btn-home" class="px-3 py-1.5 rounded-lg font-medium transition-all bg-cyan-600 text-white shadow-sm">监控中心</button>
-      <button onclick="switchTab('library')" id="nav-btn-library" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">动作库与计划</button>
-      <button onclick="switchTab('patient')" id="nav-btn-patient" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">患者档案</button>
-      <button onclick="switchTab('history')" id="nav-btn-history" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">训练历史</button>
-      <button onclick="switchTab('replay')" id="nav-btn-replay" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">姿态复盘</button>
-      <button onclick="switchTab('settings')" id="nav-btn-settings" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">增强设置</button>
-      <button onclick="switchTab('alarm')" id="nav-btn-alarm" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">声光告警管控</button>
-      <button onclick="switchTab('admin')" id="nav-btn-admin" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">管理员控制台</button>
-      <button onclick="switchTab('about')" id="nav-btn-about" class="px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900">项目介绍</button>
-    </nav>
-
     <div class="flex items-center gap-3">
       <!-- Status Badge -->
-      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-700 text-xs font-semibold">
         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
         <span id="txt-sys-online">SYSTEM ONLINE</span>
       </div>
 
       <!-- Language Selector -->
-      <div class="flex bg-gray-100 border border-gray-300 rounded-lg p-1">
-        <button onclick="setLanguage('zh')" id="lang-btn-zh" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all bg-cyan-600 text-white shadow-sm">中文</button>
+      <div class="flex bg-white border border-gray-300 rounded-lg p-1">
+        <button onclick="setLanguage('zh')" id="lang-btn-zh" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all bg-cyan-600 text-white">中文</button>
         <button onclick="setLanguage('en')" id="lang-btn-en" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all text-gray-600 hover:text-gray-900">EN</button>
         <button onclick="setLanguage('ko')" id="lang-btn-ko" class="px-2.5 py-1 text-xs font-medium rounded-md transition-all text-gray-600 hover:text-gray-900">한국어</button>
       </div>
@@ -149,18 +125,17 @@
           
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-video text-cyan-600"></i>
+              <i class="fa-solid fa-video text-cyan-700"></i>
               <h2 id="txt-vision-title" class="font-bold text-gray-900 text-sm tracking-wide">本地视觉姿态感知引擎 (MediaPipe Pose)</h2>
             </div>
             <span class="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
               <i class="fa-solid fa-shield-halved"></i>
               <span id="txt-local-privacy">Edge Computing Privacy Guard</span>
             </span>
-
           </div>
 
           <!-- Video Stream Canvas Stack -->
-          <div class="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center group">
+          <div class="relative w-full aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center group">
             
             <!-- Video Feed element -->
             <video id="webcam-video" class="w-full h-full object-cover hidden" playsinline muted></video>
@@ -169,21 +144,21 @@
             <canvas id="pose-canvas" class="w-full h-full object-cover"></canvas>
             
             <!-- Privacy / Screen Mask Overlay -->
-            <div id="screen-mask" class="hidden absolute inset-0 bg-gray-900/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-20">
-              <i class="fa-solid fa-eye-slash text-3xl text-gray-400 mb-2"></i>
-              <p id="txt-mask-enabled" class="text-sm font-semibold text-gray-200">画面遮挡保护已开启</p>
-              <p id="txt-mask-sub" class="text-xs text-gray-400 mt-1">AI继续在后台进行骨骼关键点运算，保护用户隐私</p>
+            <div id="screen-mask" class="hidden absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-20">
+              <i class="fa-solid fa-eye-slash text-3xl text-gray-600 mb-2"></i>
+              <p id="txt-mask-enabled" class="text-sm font-semibold text-gray-900">画面遮挡保护已开启</p>
+              <p id="txt-mask-sub" class="text-xs text-gray-600 mt-1">AI继续在后台进行骨骼关键点运算，保护用户隐私</p>
             </div>
 
             <!-- Cam Status Tag -->
-            <div id="cam-status-tag" class="absolute top-3 left-3 bg-white/80 backdrop-blur px-2.5 py-1 rounded-md border border-gray-200 text-xs text-gray-700 flex items-center gap-2 z-10 shadow-sm">
-              <span id="cam-status-dot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <div id="cam-status-tag" class="absolute top-3 left-3 bg-white/85 backdrop-blur px-2.5 py-1 rounded-md border border-gray-200 text-xs text-gray-700 flex items-center gap-2 z-10">
+              <span id="cam-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
               <span id="txt-stream-status">模拟演示视角 (Simulated Feed)</span>
             </div>
 
             <!-- Privacy Notice -->
-            <div class="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur border border-cyan-200 p-2 rounded-lg text-[11px] text-cyan-800 flex items-center gap-2 z-10 shadow-sm">
-              <i class="fa-solid fa-lock text-cyan-600 text-sm"></i>
+            <div class="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur border border-cyan-300 p-2 rounded-lg text-[11px] text-cyan-700 flex items-center gap-2 z-10">
+              <i class="fa-solid fa-lock text-cyan-700 text-sm"></i>
               <span id="txt-privacy-notice">视频画面与33个关键点数据均在本地浏览器内实时处理，不上传云端，仅输出告警信号。</span>
             </div>
           </div>
@@ -192,7 +167,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div>
               <label id="txt-label-input-source" class="block text-xs text-gray-600 mb-1">视频输入源 Selection</label>
-              <select id="video-source-select" onchange="handleSourceChange()" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-cyan-500 shadow-sm">
+              <select id="video-source-select" onchange="handleSourceChange()" class="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-xs text-gray-900 focus:outline-none focus:border-cyan-500">
                 <option value="sim">🎮 模拟标准康复训练 (Simulated AI)</option>
                 <option value="webcam">📷 USB / 内置摄像头 (Local Camera)</option>
                 <option value="file">📁 上传本地视频文件 (Upload File)</option>
@@ -203,12 +178,12 @@
             </div>
 
             <div class="flex items-end gap-2">
-              <button id="btn-toggle-mask" onclick="toggleScreenMask()" class="flex-1 bg-white hover:bg-gray-50 text-gray-700 text-xs py-2 px-3 rounded-lg border border-gray-300 flex items-center justify-center gap-2 transition-all shadow-sm">
+              <button id="btn-toggle-mask" onclick="toggleScreenMask()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs py-2 px-3 rounded-lg border border-gray-300 flex items-center justify-center gap-2 transition-all">
                 <i class="fa-solid fa-mask"></i>
                 <span id="txt-btn-mask">画面遮挡</span>
               </button>
 
-              <button id="btn-start-analysis" onclick="toggleAnalysis()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 px-3 rounded-lg shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all">
+              <button id="btn-start-analysis" onclick="toggleAnalysis()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 px-3 rounded-lg shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all">
                 <i class="fa-solid fa-play"></i>
                 <span id="txt-btn-start">开始分析</span>
               </button>
@@ -219,12 +194,12 @@
           <div class="pt-2 border-t border-gray-200">
             <p id="txt-pose-detect-label" class="text-[11px] text-gray-600 mb-2">姿态异常检测模块 Status:</p>
             <div class="flex flex-wrap gap-2 text-[11px]">
-              <span id="tag-fatigue" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-200 shadow-sm">疲劳闭眼</span>
-              <span id="tag-yawn" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-200 shadow-sm">打哈欠</span>
-              <span id="tag-head-down" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-200 shadow-sm">低头失神</span>
-              <span id="tag-fall" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-200 shadow-sm">跌倒检测</span>
-              <span id="tag-stationary" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-200 shadow-sm">长时间静止</span>
-              <span id="tag-hyperflexion" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-200 shadow-sm">膝过度屈曲</span>
+              <span id="tag-fatigue" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-300">疲劳闭眼</span>
+              <span id="tag-yawn" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-300">打哈欠</span>
+              <span id="tag-head-down" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-300">低头失神</span>
+              <span id="tag-fall" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-300">跌倒检测</span>
+              <span id="tag-stationary" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-300">长时间静止</span>
+              <span id="tag-hyperflexion" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-300">膝过度屈曲</span>
             </div>
           </div>
 
@@ -239,25 +214,25 @@
           
           <div class="flex items-center justify-between">
             <h2 id="txt-risk-panel-title" class="font-bold text-gray-900 text-sm">人机双态融合风险预警等级</h2>
-            <span class="text-xs text-gray-500">ISO 14971 Medical Risk Engine</span>
+            <span class="text-xs text-gray-600">ISO 14971 Medical Risk Engine</span>
           </div>
 
           <!-- Risk Level Visual Display -->
           <div class="grid grid-cols-3 gap-3">
             <!-- Safe -->
-            <div id="risk-card-1" class="p-3 rounded-xl border border-emerald-300 bg-emerald-50 text-center transition-all shadow-sm opacity-100">
-              <div class="text-emerald-600 text-lg font-bold">L1</div>
+            <div id="risk-card-1" class="p-3 rounded-xl border border-emerald-400 bg-emerald-50 text-center transition-all opacity-100">
+              <div class="text-emerald-700 text-lg font-bold">L1</div>
               <div id="txt-risk-l1" class="text-xs text-emerald-700 font-medium mt-1">安全训练</div>
               <div class="text-[10px] text-emerald-600 mt-0.5">Safe</div>
             </div>
             <!-- Caution -->
-            <div id="risk-card-2" class="p-3 rounded-xl border border-amber-200 bg-white text-center transition-all shadow-sm opacity-40">
+            <div id="risk-card-2" class="p-3 rounded-xl border border-amber-200 bg-white text-center transition-all opacity-40">
               <div class="text-amber-600 text-lg font-bold">L2</div>
               <div id="txt-risk-l2" class="text-xs text-amber-700 font-medium mt-1">留意状态</div>
               <div class="text-[10px] text-amber-600 mt-0.5">Caution</div>
             </div>
             <!-- Danger -->
-            <div id="risk-card-3" class="p-3 rounded-xl border border-red-200 bg-white text-center transition-all shadow-sm opacity-40">
+            <div id="risk-card-3" class="p-3 rounded-xl border border-red-200 bg-white text-center transition-all opacity-40">
               <div class="text-red-600 text-lg font-bold">L3</div>
               <div id="txt-risk-l3" class="text-xs text-red-700 font-medium mt-1">高危损伤预警</div>
               <div class="text-[10px] text-red-600 mt-0.5">Danger</div>
@@ -266,11 +241,11 @@
 
           <!-- PROMINENT ONE-CLICK SOS BUTTON FOR IPAD TOUCH -->
           <div class="pt-2">
-            <button onclick="triggerManualSOS()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-lg sm:text-xl tracking-wider shadow-xl animate-sos-pulse border-2 border-red-300 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+            <button onclick="triggerManualSOS()" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-extrabold text-lg sm:text-xl tracking-wider shadow-2xl animate-sos-pulse border-2 border-red-300/40 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
               <i class="fa-solid fa-bell-concierge text-2xl"></i>
               <span id="txt-sos-btn">一键 SOS 紧急报警 (EMERGENCY SOS)</span>
             </button>
-            <p id="txt-sos-hint" class="text-center text-[11px] text-gray-500 mt-1.5">专门针对iPad及触屏优化：点击立即触发紧急救援广播与声光警报</p>
+            <p id="txt-sos-hint" class="text-center text-[11px] text-gray-600 mt-1.5">专门针对iPad及触屏优化：点击立即触发紧急救援广播与声光警报</p>
           </div>
 
         </div>
@@ -279,7 +254,7 @@
         <div class="glass-panel rounded-2xl p-4 space-y-3">
           <div class="flex items-center justify-between border-b border-gray-200 pb-2">
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-lightbulb text-amber-500"></i>
+              <i class="fa-solid fa-lightbulb text-amber-600"></i>
               <h3 id="txt-alarm-panel-title" class="font-bold text-gray-900 text-xs tracking-wide">韩国安全监测系统整套模块 (Sound & Light Alarm Matrix)</h3>
             </div>
             <div class="flex items-center gap-2">
@@ -290,19 +265,19 @@
 
           <!-- Toggles Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <label class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 cursor-pointer shadow-sm">
-              <span id="txt-sw-alarm-sound" class="text-gray-700">警报音</span>
+            <label class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 cursor-pointer">
+              <span id="txt-sw-alarm-sound" class="text-gray-600">警报音</span>
               <input type="checkbox" id="sw-sound" checked class="accent-cyan-500 w-4 h-4">
             </label>
-            <label class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 cursor-pointer shadow-sm">
-              <span id="txt-sw-voice" class="text-gray-700">语音播报</span>
+            <label class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 cursor-pointer">
+              <span id="txt-sw-voice" class="text-gray-600">语音播报</span>
               <input type="checkbox" id="sw-voice" checked class="accent-cyan-500 w-4 h-4">
             </label>
-            <label class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 cursor-pointer shadow-sm">
-              <span id="txt-sw-speaker" class="text-gray-700">扬声器</span>
+            <label class="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 cursor-pointer">
+              <span id="txt-sw-speaker" class="text-gray-600">扬声器</span>
               <input type="checkbox" id="sw-speaker" checked class="accent-cyan-500 w-4 h-4">
             </label>
-            <button onclick="connectBluetoothLight()" class="bg-white hover:bg-gray-50 text-cyan-700 text-[11px] p-2 rounded-lg border border-cyan-200 transition-all flex items-center justify-center gap-1 shadow-sm">
+            <button onclick="connectBluetoothLight()" class="bg-white hover:bg-cyan-50 text-cyan-700 text-[11px] p-2 rounded-lg border border-cyan-300 transition-all flex items-center justify-center gap-1">
               <i class="fa-solid fa-bluetooth"></i>
               <span id="txt-btn-bt-light">连接警示灯</span>
             </button>
@@ -310,11 +285,11 @@
 
           <!-- Test Actions -->
           <div class="flex gap-2">
-            <button onclick="testAlarmSystem()" class="flex-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm">
+            <button onclick="testAlarmSystem()" class="flex-1 bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 text-xs py-2 rounded-lg transition-all flex items-center justify-center gap-2">
               <i class="fa-solid fa-vial"></i>
               <span id="txt-btn-test-alarm">声光警报测试</span>
             </button>
-            <button onclick="clearAlarmLog()" class="bg-white hover:bg-gray-50 text-gray-600 text-xs px-3 py-2 rounded-lg border border-gray-200 transition-all shadow-sm">
+            <button onclick="clearAlarmLog()" class="bg-white hover:bg-gray-100 text-gray-600 text-xs px-3 py-2 rounded-lg border border-gray-300 transition-all">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
@@ -323,10 +298,10 @@
           <div class="space-y-1">
             <div class="flex justify-between text-[11px] text-gray-600 px-1">
               <span id="txt-log-title">告警事件日志 (Alarm Logs)</span>
-              <span id="log-count" class="text-cyan-600 font-mono">0 events</span>
+              <span id="log-count" class="text-cyan-700 font-mono">0 events</span>
             </div>
-            <div id="alarm-log-container" class="h-24 overflow-y-auto bg-white rounded-lg p-2 border border-gray-200 space-y-1 font-mono text-[11px] shadow-inner">
-              <div class="text-gray-400 text-center py-2" id="txt-no-logs">暂无告警记录 (No alarm recorded)</div>
+            <div id="alarm-log-container" class="h-24 overflow-y-auto bg-white rounded-lg p-2 border border-gray-200 space-y-1 font-mono text-[11px]">
+              <div class="text-gray-600 text-center py-2" id="txt-no-logs">暂无告警记录 (No alarm recorded)</div>
             </div>
           </div>
 
@@ -343,59 +318,59 @@
       <div class="lg:col-span-5 glass-panel rounded-2xl p-4 space-y-4">
         <div class="flex items-center justify-between border-b border-gray-200 pb-3">
           <div class="flex items-center gap-2">
-            <i class="fa-solid fa-hard-drives text-cyan-600"></i>
+            <i class="fa-solid fa-hard-drives text-cyan-700"></i>
             <h3 id="txt-ble-title" class="font-bold text-gray-900 text-sm">智能手环 BLE 实时生理数据</h3>
           </div>
-          <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-            <button id="btn-mode-sim" onclick="setBandMode('sim')" class="px-2 py-0.5 text-[11px] rounded bg-cyan-600 text-white font-medium shadow-sm">模拟</button>
+          <div class="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-1">
+            <button id="btn-mode-sim" onclick="setBandMode('sim')" class="px-2 py-0.5 text-[11px] rounded bg-cyan-600 text-white font-medium">模拟</button>
             <button id="btn-mode-ble" onclick="setBandMode('ble')" class="px-2 py-0.5 text-[11px] rounded text-gray-600 hover:text-gray-900 font-medium">蓝牙硬件</button>
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
-          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden shadow-sm">
-            <span id="txt-param-hr" class="text-xs text-gray-500 block mb-1">实时心率 (Heart Rate)</span>
+          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden">
+            <span id="txt-param-hr" class="text-xs text-gray-600 block mb-1">实时心率 (Heart Rate)</span>
             <div class="flex items-baseline gap-2">
-              <span id="val-hr" class="text-2xl font-bold font-mono text-cyan-600">78</span>
-              <span class="text-xs text-gray-400">BPM</span>
+              <span id="val-hr" class="text-2xl font-bold font-mono text-cyan-700">78</span>
+              <span class="text-xs text-gray-600">BPM</span>
             </div>
-            <i class="fa-solid fa-heart-pulse text-red-500/10 text-3xl absolute right-2 bottom-2"></i>
+            <i class="fa-solid fa-heart-pulse text-red-500/20 text-3xl absolute right-2 bottom-2"></i>
           </div>
 
-          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden shadow-sm">
-            <span id="txt-param-bp" class="text-xs text-gray-500 block mb-1">血压 (Blood Pressure)</span>
+          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden">
+            <span id="txt-param-bp" class="text-xs text-gray-600 block mb-1">血压 (Blood Pressure)</span>
             <div class="flex items-baseline gap-1">
-              <span id="val-bp" class="text-xl font-bold font-mono text-blue-600">120/80</span>
-              <span class="text-[10px] text-gray-400">mmHg</span>
+              <span id="val-bp" class="text-xl font-bold font-mono text-blue-700">120/80</span>
+              <span class="text-[10px] text-gray-600">mmHg</span>
             </div>
-            <i class="fa-solid fa-droplet text-blue-500/10 text-3xl absolute right-2 bottom-2"></i>
+            <i class="fa-solid fa-droplet text-blue-500/20 text-3xl absolute right-2 bottom-2"></i>
           </div>
 
-          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden shadow-sm">
-            <span id="txt-param-temp" class="text-xs text-gray-500 block mb-1">体温 (Temperature)</span>
+          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden">
+            <span id="txt-param-temp" class="text-xs text-gray-600 block mb-1">体温 (Temperature)</span>
             <div class="flex items-baseline gap-1">
-              <span id="val-temp" class="text-2xl font-bold font-mono text-emerald-600">36.6</span>
-              <span class="text-xs text-gray-400">°C</span>
+              <span id="val-temp" class="text-2xl font-bold font-mono text-emerald-700">36.6</span>
+              <span class="text-xs text-gray-600">°C</span>
             </div>
-            <i class="fa-solid fa-temperature-half text-emerald-500/10 text-3xl absolute right-2 bottom-2"></i>
+            <i class="fa-solid fa-temperature-half text-emerald-500/20 text-3xl absolute right-2 bottom-2"></i>
           </div>
 
-          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden shadow-sm">
-            <span id="txt-param-imu" class="text-xs text-gray-500 block mb-1">关节角度 (Joint Angle)</span>
+          <div class="bg-white p-3 rounded-xl border border-gray-200 relative overflow-hidden">
+            <span id="txt-param-imu" class="text-xs text-gray-600 block mb-1">膝关节角度 (Knee Angle)</span>
             <div class="flex items-baseline gap-1">
               <span id="val-knee-angle" class="text-2xl font-bold font-mono text-amber-600">135</span>
-              <span class="text-xs text-gray-400">deg</span>
+              <span class="text-xs text-gray-600">deg</span>
             </div>
-            <i class="fa-solid fa-person-walking text-amber-500/10 text-3xl absolute right-2 bottom-2"></i>
+            <i class="fa-solid fa-person-walking text-amber-500/20 text-3xl absolute right-2 bottom-2"></i>
           </div>
         </div>
 
-        <div class="bg-white p-3 rounded-xl border border-gray-200 text-[11px] space-y-1 shadow-sm">
-          <div class="text-gray-700 font-semibold flex items-center gap-1">
-            <i class="fa-solid fa-code text-cyan-600"></i>
+        <div class="bg-white p-3 rounded-xl border border-gray-200 text-[11px] space-y-1">
+          <div class="text-gray-900 font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-code text-cyan-700"></i>
             <span id="txt-code-note-title">硬件对接接口 (Hardware API Hook)</span>
           </div>
-          <p class="text-gray-500 text-[10px] leading-relaxed">
+          <p class="text-gray-600 text-[10px] leading-relaxed">
             /* 预留WebBluetooth手环连接说明：<br>
             1. 点击蓝牙硬件模式将调用 navigator.bluetooth.requestDevice()<br>
             2. 服务UUID: 0x180D (Heart Rate), 测量特征码: 0x2A37<br>
@@ -407,37 +382,23 @@
 
       <!-- Kinematics & Knee Motion Visualization Canvas + Radar Chart (7 Cols) -->
       <div class="lg:col-span-7 glass-panel rounded-2xl p-4 space-y-3">
-        <div class="flex items-center justify-between border-b border-gray-200 pb-2 flex-wrap gap-2">
+        <div class="flex items-center justify-between border-b border-gray-200 pb-2">
           <div class="flex items-center gap-2">
-            <i class="fa-solid fa-chart-line text-cyan-600"></i>
-            <h3 id="txt-knee-chart-title" class="font-bold text-gray-900 text-sm">关节实时弯曲角度与姿态轨迹可视化</h3>
+            <i class="fa-solid fa-chart-line text-cyan-700"></i>
+            <h3 id="txt-knee-chart-title" class="font-bold text-gray-900 text-sm">膝关节实时弯曲角度与姿态轨迹可视化</h3>
           </div>
-          <div class="flex items-center gap-3">
-            <select id="joint-select" onchange="handleJointChange()" class="bg-white border border-gray-300 rounded-lg px-2 py-1 text-xs text-cyan-700 font-semibold focus:outline-none focus:border-cyan-500 shadow-sm">
-              <option value="left_knee">左膝关节 (Left Knee)</option>
-              <option value="right_knee" selected>右膝关节 (Right Knee)</option>
-              <option value="left_hip">左髋关节 (Left Hip)</option>
-              <option value="right_hip">右髋关节 (Right Hip)</option>
-              <option value="left_ankle">左踝关节 (Left Ankle)</option>
-              <option value="right_ankle">右踝关节 (Right Ankle)</option>
-              <option value="left_shoulder">左肩关节 (Left Shoulder)</option>
-              <option value="right_shoulder">右肩关节 (Right Shoulder)</option>
-              <option value="left_elbow">左肘关节 (Left Elbow)</option>
-              <option value="right_elbow">右肘关节 (Right Elbow)</option>
-            </select>
-            <span class="text-xs text-cyan-700 font-mono font-bold" id="knee-angle-display">ANGLE: --</span>
-          </div>
+          <span class="text-xs text-cyan-700 font-mono" id="knee-angle-display">ANGLE: 135°</span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-          <div class="bg-white rounded-xl border border-gray-200 p-2 aspect-square flex flex-col items-center justify-center relative shadow-sm">
-            <span class="absolute top-2 left-2 text-[10px] text-gray-400">2D Joint Skeleton Vector</span>
+          <div class="bg-white rounded-xl border border-gray-200 p-2 aspect-square flex flex-col items-center justify-center relative">
+            <span class="absolute top-2 left-2 text-[10px] text-gray-600">2D Joint Skeleton Vector</span>
             <canvas id="knee-canvas" class="w-full h-full max-h-[220px]"></canvas>
-            <div id="knee-status-label" class="text-xs text-emerald-600 font-medium mt-1">正常曲伸范围 (Normal Motion)</div>
+            <div id="knee-status-label" class="text-xs text-emerald-700 font-medium mt-1">正常曲伸范围 (Normal Motion)</div>
           </div>
 
-          <div class="bg-white rounded-xl border border-gray-200 p-2 aspect-square flex flex-col items-center justify-center relative shadow-sm">
-            <span class="absolute top-2 left-2 text-[10px] text-gray-400">Multi-Param Radar Assessment</span>
+          <div class="bg-white rounded-xl border border-gray-200 p-2 aspect-square flex flex-col items-center justify-center relative">
+            <span class="absolute top-2 left-2 text-[10px] text-gray-600">Multi-Param Radar Assessment</span>
             <div class="w-full h-full max-h-[220px]">
               <canvas id="radarChart"></canvas>
             </div>
@@ -453,7 +414,7 @@
       <!-- 1. System Architecture -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="glass-panel p-5 rounded-2xl space-y-2">
-          <div class="w-10 h-10 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg mb-2">
+          <div class="w-10 h-10 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center text-lg mb-2">
             <i class="fa-solid fa-microchip"></i>
           </div>
           <h4 id="txt-arch-1-title" class="font-bold text-gray-900 text-sm">人机双态边缘感知架构</h4>
@@ -463,7 +424,7 @@
         </div>
 
         <div class="glass-panel p-5 rounded-2xl space-y-2">
-          <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-lg mb-2">
+          <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-lg mb-2">
             <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
           <h4 id="txt-arch-2-title" class="font-bold text-gray-900 text-sm">二次损伤主动预警</h4>
@@ -473,7 +434,7 @@
         </div>
 
         <div class="glass-panel p-5 rounded-2xl space-y-2">
-          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg mb-2">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mb-2">
             <i class="fa-solid fa-network-wired"></i>
           </div>
           <h4 id="txt-arch-3-title" class="font-bold text-gray-900 text-sm">声光电三级联动救助</h4>
@@ -488,7 +449,7 @@
         <div class="lg:col-span-6 glass-panel p-5 rounded-2xl space-y-3">
           <div class="flex justify-between items-center">
             <h4 id="txt-cross-chart-title" class="font-bold text-gray-900 text-sm">5折交叉验证算法准确率 (5-Fold Cross Validation)</h4>
-            <span class="text-xs text-cyan-600 font-semibold">Mean Accuracy: 98.4%</span>
+            <span class="text-xs text-cyan-700">Mean Accuracy: 98.4%</span>
           </div>
           <div class="h-64">
             <canvas id="crossValChart"></canvas>
@@ -497,11 +458,11 @@
 
         <div class="lg:col-span-6 glass-panel p-5 rounded-2xl space-y-3 overflow-x-auto">
           <h4 id="txt-comp-title" class="font-bold text-gray-900 text-sm mb-2">竞品能力对比 (Competitor Comparison Matrix)</h4>
-          <table class="w-full text-left text-xs text-gray-700">
-            <thead class="bg-gray-100 text-gray-600 border-b border-gray-200">
+          <table class="w-full text-left text-xs text-gray-900">
+            <thead class="bg-gray-200 text-gray-600">
               <tr>
                 <th id="th-feature" class="p-2">对比维度 (Feature)</th>
-                <th id="th-our" class="p-2 text-cyan-600 font-bold">本系统 (Our System)</th>
+                <th id="th-our" class="p-2 text-cyan-700">本系统 (Our System)</th>
                 <th id="th-comp-a" class="p-2">传统视觉康复</th>
                 <th id="th-comp-b" class="p-2">单纯穿戴式设备</th>
               </tr>
@@ -510,26 +471,26 @@
               <tr>
                 <td id="td-f1" class="p-2 font-medium">感知维度</td>
                 <td class="p-2 text-cyan-700 font-bold">人机双态 (视觉+生理)</td>
-                <td class="p-2 text-gray-500">仅单目视觉</td>
-                <td class="p-2 text-gray-500">仅心率/IMU</td>
+                <td class="p-2 text-gray-600">仅单目视觉</td>
+                <td class="p-2 text-gray-600">仅心率/IMU</td>
               </tr>
               <tr>
                 <td id="td-f2" class="p-2 font-medium">二次损伤预警</td>
-                <td class="p-2 text-emerald-600 font-bold">事前1.2秒预测</td>
-                <td class="p-2 text-gray-500">事后统计记录</td>
-                <td class="p-2 text-gray-500">阈值简单报警</td>
+                <td class="p-2 text-emerald-700 font-bold">事前1.2秒预测</td>
+                <td class="p-2 text-gray-600">事后统计记录</td>
+                <td class="p-2 text-gray-600">阈值简单报警</td>
               </tr>
               <tr>
                 <td id="td-f3" class="p-2 font-medium">数据隐私保护</td>
-                <td class="p-2 text-emerald-600 font-bold">纯前端本地零上传</td>
-                <td class="p-2 text-gray-500">视频流需推云端</td>
-                <td class="p-2 text-gray-500">蓝牙数据上传</td>
+                <td class="p-2 text-emerald-700 font-bold">纯前端本地零上传</td>
+                <td class="p-2 text-gray-600">视频流需推云端</td>
+                <td class="p-2 text-gray-600">蓝牙数据上传</td>
               </tr>
               <tr>
                 <td id="td-f4" class="p-2 font-medium">部署成本</td>
                 <td class="p-2 text-cyan-700 font-bold">极低 (普通iPad/浏览器)</td>
-                <td class="p-2 text-gray-500">昂贵深度摄像头</td>
-                <td class="p-2 text-gray-500">专用绑定硬件</td>
+                <td class="p-2 text-gray-600">昂贵深度摄像头</td>
+                <td class="p-2 text-gray-600">专用绑定硬件</td>
               </tr>
             </tbody>
           </table>
@@ -540,17 +501,17 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="glass-panel p-5 rounded-2xl space-y-3">
           <h4 id="txt-clinical-title" class="font-bold text-gray-900 text-sm">典型临床应用场景 (Clinical Scenarios)</h4>
-          <ul class="space-y-2 text-xs text-gray-700">
+          <ul class="space-y-2 text-xs text-gray-900">
             <li class="flex items-start gap-2">
-              <i class="fa-solid fa-circle-check text-cyan-600 mt-0.5"></i>
+              <i class="fa-solid fa-circle-check text-cyan-700 mt-0.5"></i>
               <span id="txt-cli-1"><b>骨科术后康复：</b> 前交叉韧带(ACL)重建术后与全膝关节置换(TKA)角度监控。</span>
             </li>
             <li class="flex items-start gap-2">
-              <i class="fa-solid fa-circle-check text-cyan-600 mt-0.5"></i>
+              <i class="fa-solid fa-circle-check text-cyan-700 mt-0.5"></i>
               <span id="txt-cli-2"><b>神经康复中心：</b> 脑卒中偏瘫患者步态训练时的跌倒风险与代偿姿态预警。</span>
             </li>
             <li class="flex items-start gap-2">
-              <i class="fa-solid fa-circle-check text-cyan-600 mt-0.5"></i>
+              <i class="fa-solid fa-circle-check text-cyan-700 mt-0.5"></i>
               <span id="txt-cli-3"><b>居家养老康复：</b> 无人看守场景下的紧急一键SOS远程呼叫与声光驱离保护。</span>
             </li>
           </ul>
@@ -561,15 +522,15 @@
           <div class="space-y-2 text-xs">
             <div class="flex gap-3 items-center">
               <span class="px-2 py-0.5 rounded bg-cyan-100 text-cyan-700 font-mono">2027 Q4</span>
-              <span id="txt-rm-1" class="text-gray-700">完成三甲医院120例临床交叉对比测试</span>
+              <span id="txt-rm-1" class="text-gray-900">完成三甲医院120例临床交叉对比测试</span>
             </div>
             <div class="flex gap-3 items-center">
               <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-mono">2028 Q1</span>
-              <span id="txt-rm-2" class="text-gray-700">CES 2028 全球首发与医疗器械二类认证申报</span>
+              <span id="txt-rm-2" class="text-gray-900">CES 2028 全球首发与医疗器械二类认证申报</span>
             </div>
             <div class="flex gap-3 items-center">
               <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-mono">2028 Q3</span>
-              <span id="txt-rm-3" class="text-gray-700">与韩国/北美50+康复机构达成算法授权与设备部署</span>
+              <span id="txt-rm-3" class="text-gray-900">与韩国/北美50+康复机构达成算法授权与设备部署</span>
             </div>
           </div>
         </div>
@@ -579,11 +540,11 @@
       <div class="glass-panel p-5 rounded-2xl space-y-3">
         <h4 id="txt-faq-title" class="font-bold text-gray-900 text-sm">常见问题解答 (FAQ)</h4>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1 shadow-sm">
+          <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1">
             <p id="txt-faq-q1" class="font-semibold text-cyan-700">Q: 为什么不需要将视频上传到服务器？</p>
             <p id="txt-faq-a1" class="text-gray-600">A: 本系统使用WebAssembly+MediaPipe在浏览器本地完成所有骨骼关键点推算，既保障患者医疗隐私，又减少网络延迟。</p>
           </div>
-          <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1 shadow-sm">
+          <div class="bg-white p-3 rounded-xl border border-gray-200 space-y-1">
             <p id="txt-faq-q2" class="font-semibold text-cyan-700">Q: 如何接入医院现有的护士站系统？</p>
             <p id="txt-faq-a2" class="text-gray-600">A: 系统提供标准WebSocket/MQTT接口，告警触发时可自动向医院HIS/PACS及治疗师手环推送信令。</p>
           </div>
@@ -593,182 +554,190 @@
     </section>
     </div> <!-- END OF TAB CONTENT HOME -->
 
-    <!-- 2. ACTION LIBRARY TAB VIEW -->
-    <div id="tab-content-library" class="hidden space-y-6">
-      <div class="glass-panel p-6 rounded-2xl space-y-4">
-        <h3 class="font-bold text-gray-900 text-base">动作库与康复计划管理 (Action Library & Plans)</h3>
-        <p class="text-xs text-gray-600">内置ACL术后康复、脑卒中偏瘫步态、老年平衡训练等专业康复动作库，支持自定义训练参数与阈值下发。</p>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2">
-            <h4 class="font-bold text-cyan-700">ACL术后屈伸训练</h4>
-            <p class="text-gray-600">目标角度: 70°-160° | 推荐组数: 3组/天</p>
-            <button class="px-3 py-1 bg-cyan-600 text-white rounded text-xs">加载动作</button>
-          </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2">
-            <h4 class="font-bold text-cyan-700">下肢平衡负重训练</h4>
-            <p class="text-gray-600">重心偏移阈值: <15cm | 推荐组数: 4组/天</p>
-            <button class="px-3 py-1 bg-cyan-600 text-white rounded text-xs">加载动作</button>
-          </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-2">
-            <h4 class="font-bold text-cyan-700">上肢肘关节上举训练</h4>
-            <p class="text-gray-600">目标角度: 45°-170° | 推荐组数: 3组/天</p>
-            <button class="px-3 py-1 bg-cyan-600 text-white rounded text-xs">加载动作</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. PATIENT ARCHIVE TAB VIEW -->
-    <div id="tab-content-patient" class="hidden space-y-6">
-      <div class="glass-panel p-6 rounded-2xl space-y-4">
-        <h3 class="font-bold text-gray-900 text-base">患者档案与康复病例管理 (Patient Archives)</h3>
-        <p class="text-xs text-gray-600">管理患者基本信息、手术史、术后恢复阶段及物理治疗师评估记录。</p>
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs space-y-2">
-          <div class="flex justify-between border-b border-gray-100 pb-2">
-            <span class="font-bold text-gray-800">患者姓名: 金明浩 (Kim Min-ho)</span>
-            <span class="text-emerald-600">恢复阶段: 术后第4周</span>
-          </div>
-          <p class="text-gray-600">主治诊断: 右膝前交叉韧带(ACL)重建术后</p>
-          <p class="text-gray-600">今日康复评分: 92分 (优良)</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. TRAINING HISTORY TAB VIEW -->
-    <div id="tab-content-history" class="hidden space-y-6">
-      <div class="glass-panel p-6 rounded-2xl space-y-4">
-        <h3 class="font-bold text-gray-900 text-base">历史训练记录与数据统计 (Training History)</h3>
-        <p class="text-xs text-gray-600">查看历次训练时长、动作达标率、平均心率及二次损伤预警触发频次。</p>
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs space-y-2">
-          <div class="flex justify-between text-gray-500 font-semibold border-b border-gray-100 pb-2">
-            <span>训练日期</span><span>时长</span><span>平均心率</span><span>达标率</span><span>风险状态</span>
-          </div>
-          <div class="flex justify-between text-gray-700 py-1">
-            <span>2028-01-10 10:30</span><span>25分钟</span><span>78 BPM</span><span>94%</span><span class="text-emerald-600">安全 (Safe)</span>
-          </div>
-          <div class="flex justify-between text-gray-700 py-1">
-            <span>2028-01-09 15:20</span><span>30分钟</span><span>82 BPM</span><span>89%</span><span class="text-amber-600">留意 (Caution)</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. POSE REPLAY TAB VIEW -->
-    <div id="tab-content-replay" class="hidden space-y-6">
-      <div class="glass-panel p-6 rounded-2xl space-y-4">
-        <h3 class="font-bold text-gray-900 text-base">3D/2D 骨骼姿态复盘与回放分析 (Pose Replay)</h3>
-        <p class="text-xs text-gray-600">精准复盘单次训练中的异常动作帧，逐帧查看关节角度偏离与代偿轨迹。</p>
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center text-center space-y-3">
-          <i class="fa-solid fa-film text-4xl text-cyan-600"></i>
-          <p class="text-xs text-gray-600">请选择需复盘的训练会话录像文件</p>
-          <button class="px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs shadow-sm">加载复盘回放</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 6. ADVANCED SETTINGS TAB VIEW -->
-    <div id="tab-content-settings" class="hidden space-y-6">
-      <div class="glass-panel p-6 rounded-2xl space-y-4">
-        <h3 class="font-bold text-gray-900 text-base">增强设置与算法超参数配置 (Advanced Settings)</h3>
-        <p class="text-xs text-gray-600">调整MediaPipe置信度阈值、传感器采样频率及边缘AI加速选项。</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
-            <label class="block font-semibold text-gray-700">模型检测置信度 (Detection Confidence)</label>
-            <input type="range" min="0.1" max="1.0" step="0.05" value="0.5" class="w-full accent-cyan-600">
-          </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-3">
-            <label class="block font-semibold text-gray-700">IMU传感器采样率 (Sampling Rate)</label>
-            <select class="w-full bg-white border border-gray-300 rounded-lg p-2 text-xs">
-              <option>20 Hz (标准)</option>
-              <option>50 Hz (高清)</option>
-              <option>100 Hz (高精度)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 7. ALARM CONTROL TAB VIEW -->
+    <!-- 2. ALARM CONTROL TAB VIEW -->
     <div id="tab-content-alarm" class="hidden space-y-6">
       <div class="glass-panel p-6 rounded-2xl space-y-4">
         <div class="flex items-center gap-3 border-b border-gray-200 pb-3">
-          <i class="fa-solid fa-bell text-amber-500 text-xl"></i>
+          <i class="fa-solid fa-bell text-amber-600 text-xl"></i>
           <div>
             <h3 id="txt-tab-alarm-title" class="font-bold text-gray-900 text-base">声光联动告警中心管控</h3>
-            <p id="txt-tab-alarm-sub" class="text-xs text-gray-500">CES 2028 Standard Sound & Strobe Warning Matrix Control</p>
+            <p id="txt-tab-alarm-sub" class="text-xs text-gray-600">CES 2028 Standard Sound & Strobe Warning Matrix Control</p>
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 shadow-sm">
+          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
             <p class="font-semibold text-cyan-700">扬声器与音效 (Audio Output Specs)</p>
             <p class="text-gray-600">最大分贝: 85dB | 声波类型: 锯齿波高频脉冲 | 包含三语语音播报 (TTS)</p>
-            <button onclick="testAlarmSystem()" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-medium rounded-lg transition-all shadow-sm">触发自检提示音</button>
+            <button onclick="testAlarmSystem()" class="w-full py-2.5 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white font-medium rounded-lg transition-all">触发自检提示音</button>
           </div>
-          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 shadow-sm">
+          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
             <p class="font-semibold text-cyan-700">蓝牙硬件警示灯 (BLE Beacon Light)</p>
             <p class="text-gray-600">通信协议: WebBluetooth GATT | 频段: 2.4GHz BLE 5.2 | 闪烁模式: 红色紧急高频频闪</p>
-            <button onclick="connectBluetoothLight()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-medium rounded-lg transition-all shadow-sm">连接蓝牙警示灯</button>
+            <button onclick="connectBluetoothLight()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-medium rounded-lg transition-all">配对 BLE 现场警示灯</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 8. ADMIN CONSOLE TAB VIEW -->
+    <!-- 3. DEVICE SETTINGS TAB VIEW -->
+    <div id="tab-content-settings" class="hidden space-y-6">
+      <div class="glass-panel p-6 rounded-2xl space-y-4">
+        <div class="flex items-center gap-3 border-b border-gray-200 pb-3">
+          <i class="fa-solid fa-sliders text-cyan-700 text-xl"></i>
+          <div>
+            <h3 id="txt-tab-set-title" class="font-bold text-gray-900 text-base">设备与采集卡参数设置</h3>
+            <p id="txt-tab-set-sub" class="text-xs text-gray-600">System Parameters & Sensor Configurations</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+            <span class="text-gray-600">MediaPipe Pose 模型复杂度:</span>
+            <select class="w-full bg-white border border-gray-300 rounded p-2 text-gray-900">
+              <option>Full Model (Complexity 1 - High Precision)</option>
+              <option>Lite Model (Complexity 0 - Low Latency iPad)</option>
+            </select>
+          </div>
+          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+            <span class="text-gray-600">膝关节屈曲角告警阈值:</span>
+            <input type="range" min="60" max="90" value="75" class="w-full accent-cyan-500">
+            <p class="text-gray-600 text-[11px]">当前触发门限: <span class="text-cyan-700 font-mono">75°</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. ADMIN TAB VIEW -->
     <div id="tab-content-admin" class="hidden space-y-6">
       <div class="glass-panel p-6 rounded-2xl space-y-4">
-        <h3 class="font-bold text-gray-900 text-base">管理员控制台与机构权限管理 (Admin Console)</h3>
-        <p class="text-xs text-gray-600">管理医疗机构账号授权、设备节点绑定状态及系统固件OTA升级。</p>
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs space-y-2">
-          <div class="flex justify-between py-1 border-b border-gray-100">
-            <span>授权机构: 首尔大学医院康复医学科</span><span class="text-emerald-600">已激活 (Active)</span>
-          </div>
-          <div class="flex justify-between py-1">
-            <span>系统版本: v3.2.0-CES2028</span><span class="text-cyan-600">当前为最新版</span>
+        <div class="flex items-center gap-3 border-b border-gray-200 pb-3">
+          <i class="fa-solid fa-user-shield text-emerald-700 text-xl"></i>
+          <div>
+            <h3 id="txt-tab-admin-title" class="font-bold text-gray-900 text-base">管理员控制台 (Admin Console)</h3>
+            <p id="txt-tab-admin-sub" class="text-xs text-gray-600">CES 2028 Demonstration System Log & Clinical Telemetry</p>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- 9. ABOUT / PROJECT INTRO TAB VIEW -->
-    <div id="tab-content-about" class="hidden space-y-6">
-      <div class="glass-panel p-6 rounded-2xl space-y-4">
-        <h3 class="font-bold text-gray-900 text-base">项目介绍与技术白皮书 (Project Introduction)</h3>
-        <p class="text-xs text-gray-600">基于人机双态感知的AI康复训练二次损伤风险预警系统，专为CES 2028全球创新展台设计。</p>
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm text-xs space-y-2 text-gray-700">
-          <p><b>核心团队：</b> 数字疗法与AI康复实验室</p>
-          <p><b>技术栈：</b> Tailwind CSS, Chart.js, MediaPipe Pose Edge Vision, WebBluetooth API</p>
-          <p><b>设计理念：</b> 零云端隐私泄露、事前1.2秒主动预警、声光电三级联动救助</p>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 text-xs space-y-2 font-mono text-gray-900">
+          <p class="text-emerald-700 font-bold">● IP Device Target: 192.168.1.102 (iPad Air / Safari 18.0)</p>
+          <p>● Encryption: AES-256 Local Enclave Guard</p>
+          <p>● WebAssembly Engine: v2028.1.4 Build OK</p>
         </div>
       </div>
     </div>
 
   </main>
 
-  <!-- JavaScript Application Logic -->
+  <!-- CAMERA EXCEPTION DIALOG MODAL -->
+  <div id="cam-error-modal" class="hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white border border-amber-400 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex items-center gap-3 text-amber-600">
+        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+        <h3 id="txt-cam-err-title" class="font-bold text-base">摄像头权限或环境异常 Warning</h3>
+      </div>
+      <p id="cam-error-msg" class="text-xs text-gray-900 leading-relaxed">
+        无法访问真实摄像头设备。
+      </p>
+      <div class="bg-gray-100 p-3 rounded-xl border border-gray-200 text-[11px] text-gray-600 space-y-1">
+        <p class="font-semibold text-cyan-700">提示 (Troubleshooting):</p>
+        <p>1. Chrome/Edge 要求 Webcam 必须在 <b>HTTPS</b> 或 <b>http://localhost</b> 安全域运行。</p>
+        <p>2. 请检查浏览器地址栏左侧图标，允许摄像头权限。</p>
+        <p>3. 系统现已自动切回【模拟AI引擎模式】以确保演示顺利进行。</p>
+      </div>
+      <button onclick="closeCamErrorModal()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs rounded-lg transition-all">
+        知道了 (Switch to Simulation)
+      </button>
+    </div>
+  </div>
+
+  <!-- SOS EMERGENCY TRIGGERED MODAL POPUP -->
+  <div id="sos-modal" class="hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-red-500 rounded-3xl max-w-lg w-full p-6 text-center space-y-5 shadow-2xl">
+      <div class="w-20 h-20 mx-auto rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-red-600 text-4xl animate-pulse">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div>
+        <h3 id="txt-modal-sos-title" class="text-2xl font-black text-red-600 tracking-wider">紧急求助求救已触发</h3>
+        <p id="txt-modal-sos-desc" class="text-xs text-gray-600 mt-2">已向中央康复监测控制台及现场护理人员推送高优先级求救信号！</p>
+      </div>
+
+      <div class="bg-gray-100 p-3 rounded-xl border border-gray-200 text-left text-xs font-mono space-y-1">
+        <div class="flex justify-between text-gray-600">
+          <span id="txt-modal-time-label">触发时间:</span>
+          <span id="modal-sos-timestamp" class="text-red-600">2026-10-28 15:30:00</span>
+        </div>
+        <div class="flex justify-between text-gray-600">
+          <span id="txt-modal-type-label">告警类型:</span>
+          <span id="txt-modal-type-val" class="text-amber-700">手动一键SOS求救 (Manual Trigger)</span>
+        </div>
+      </div>
+
+      <button onclick="closeSOSModal()" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm tracking-wide transition-all shadow-lg shadow-red-600/40">
+        <span id="txt-btn-close-modal">确认关闭警报 (Acknowledge & Clear)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FIXED BOTTOM NAVIGATION BAR FOR TOUCH DEVICES -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-2">
+    <div class="max-w-md mx-auto flex justify-around items-center text-xs">
+      <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center gap-1 text-cyan-700 font-medium">
+        <i class="fa-solid fa-house-medical text-lg"></i>
+        <span id="txt-nav-home">康复主页</span>
+      </button>
+      <button onclick="switchTab('alarm')" id="nav-alarm" class="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 font-medium">
+        <i class="fa-solid fa-bell text-lg"></i>
+        <span id="txt-nav-alarm">声光管控</span>
+      </button>
+      <button onclick="switchTab('settings')" id="nav-settings" class="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 font-medium">
+        <i class="fa-solid fa-sliders text-lg"></i>
+        <span id="txt-nav-settings">设备设置</span>
+      </button>
+      <button onclick="switchTab('admin')" id="nav-admin" class="flex flex-col items-center gap-1 text-gray-600 hover:text-gray-900 font-medium">
+        <i class="fa-solid fa-user-shield text-lg"></i>
+        <span id="txt-nav-admin">管理员</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- JAVASCRIPT LOGIC & MEDIAPIPE CORE INTEGRATION -->
   <script>
-    /* --- Translations Dictionary --- */
-    const translations = {
+    /* =========================================================================
+       0. LIGHT THEME CLASS CONSTANTS (shared by dynamic UI updates)
+       ========================================================================= */
+    const CLS_TAG_IDLE   = "px-2 py-1 rounded bg-white text-gray-600 border border-gray-300";
+    const CLS_TAG_DANGER = "px-2 py-1 rounded bg-red-100 text-red-700 border border-red-300 animate-pulse";
+    const CLS_TAG_WARN   = "px-2 py-1 rounded bg-amber-100 text-amber-700 border border-amber-300";
+    const CLS_KNEE_OK    = "text-xs text-emerald-700 font-medium mt-1";
+    const CLS_KNEE_BAD   = "text-xs text-red-600 font-medium mt-1";
+    const CANVAS_MASK_BG = '#f3f4f6';
+
+    /* =========================================================================
+       1. TRILINGUAL DICTIONARY
+       ========================================================================= */
+    const i18n = {
       zh: {
-        disclaimer: "CES 2028 演示原型系统 - 仅用于技术展示与科研评估，不做临床医疗诊断",
+        disclaimer: "CES 2028 参展演示原型系统 - 非临床医疗诊断设备",
         appTitle: "基于人机双态感知的AI康复训练二次损伤风险预警系统",
-        appSubtitle: "CES 2028 交互式展台演示 | 实时 MediaPipe 端侧视觉推理",
-        sysOnline: "系统在线 (SYSTEM ONLINE)",
+        appSubtitle: "CES 2028 现场互动演示版 | MediaPipe 边缘实时计算",
+        sysOnline: "系统运行正常",
         visionTitle: "本地视觉姿态感知引擎 (MediaPipe Pose)",
-        localPrivacy: "端侧隐私保护 (Edge Privacy Guard)",
+        localPrivacy: "边缘计算隐私保护",
         maskEnabled: "画面遮挡保护已开启",
         maskSub: "AI继续在后台进行骨骼关键点运算，保护用户隐私",
-        streamStatus: "模拟演示视角 (Simulated Feed)",
+        streamStatusSim: "模拟演示视角 (Simulated Feed)",
+        streamStatusWebcam: "摄像头实时流 (Webcam Live)",
+        streamStatusFile: "本地视频解析中 (File Processing)",
         privacyNotice: "视频画面与33个关键点数据均在本地浏览器内实时处理，不上传云端，仅输出告警信号。",
         labelInputSource: "视频输入源 Selection",
         btnMask: "画面遮挡",
         btnStart: "开始分析",
+        btnStop: "停止分析",
         poseDetectLabel: "姿态异常检测模块 Status:",
         tagFatigue: "疲劳闭眼",
         tagYawn: "打哈欠",
         tagHeadDown: "低头失神",
         tagFall: "跌倒检测",
         tagStationary: "长时间静止",
-        tagHyperflexion: "关节过度屈曲",
+        tagHyperflexion: "膝过度屈曲",
         riskPanelTitle: "人机双态融合风险预警等级",
         riskL1: "安全训练",
         riskL2: "留意状态",
@@ -776,7 +745,8 @@
         sosBtn: "一键 SOS 紧急报警 (EMERGENCY SOS)",
         sosHint: "专门针对iPad及触屏优化：点击立即触发紧急救援广播与声光警报",
         alarmPanelTitle: "韩国安全监测系统整套模块 (Sound & Light Alarm Matrix)",
-        btLightStatus: "蓝牙警示灯：未连接",
+        btLightUnconnected: "蓝牙警示灯：未连接",
+        btLightConnected: "蓝牙警示灯：已连接",
         swAlarmSound: "警报音",
         swVoice: "语音播报",
         swSpeaker: "扬声器",
@@ -788,13 +758,13 @@
         paramHr: "实时心率 (Heart Rate)",
         paramBp: "血压 (Blood Pressure)",
         paramTemp: "体温 (Temperature)",
-        paramImu: "关节角度 (Joint Angle)",
+        paramImu: "膝关节角度 (Knee Angle)",
         codeNoteTitle: "硬件对接接口 (Hardware API Hook)",
-        kneeChartTitle: "关节实时弯曲角度与姿态轨迹可视化",
+        kneeChartTitle: "膝关节实时弯曲角度与姿态轨迹可视化",
         arch1Title: "人机双态边缘感知架构",
         arch1Desc: "融合视觉肢体姿态与生理脉搏IMU传感器，实现0延迟端侧推理。视觉数据零落盘、不上云，从源头杜绝隐私风险。",
         arch2Title: "二次损伤主动预警",
-        arch2Desc: "建立关节过伸、重心偏移跌倒及疲劳代偿三维风险模型，在发生肌肉拉伤或二次骨折前1.2秒即时触发报警中断。",
+        arch2Desc: "建立膝关节过伸、重心偏移跌倒及疲劳代偿三维风险模型，在发生肌肉拉伤或二次骨折前1.2秒即时触发报警中断。",
         arch3Title: "声光电三级联动救助",
         arch3Desc: "支持蓝牙无线报警灯、院内TTS语音呼叫与大屏SOS即时响应，为康复中心与居家患者提供双重安全屏障。",
         crossChartTitle: "5折交叉验证算法准确率 (5-Fold Cross Validation)",
@@ -819,603 +789,948 @@
         faqQ1: "Q: 为什么不需要将视频上传到服务器？",
         faqA1: "A: 本系统使用WebAssembly+MediaPipe在浏览器本地完成所有骨骼关键点推算，既保障患者医疗隐私，又减少网络延迟。",
         faqQ2: "Q: 如何接入医院现有的护士站系统？",
-        faqA2: "A: 系统提供标准WebSocket/MQTT接口，告警触发时可自动向医院HIS/PACS及治疗师手环推送信令。"
+        faqA2: "A: 系统提供标准WebSocket/MQTT接口，告警触发时可自动向医院HIS/PACS及治疗师手环推送信令。",
+        modalSosTitle: "紧急求助求救已触发",
+        modalSosDesc: "已向中央康复监测控制台及现场护理人员推送高优先级求救信号！",
+        modalTimeLabel: "触发时间:",
+        modalTypeLabel: "告警类型:",
+        modalTypeVal: "手动一键SOS求救 (Manual Trigger)",
+        btnCloseModal: "确认关闭警报 (Acknowledge & Clear)",
+        navHome: "康复主页",
+        navAlarm: "声光管控",
+        navSettings: "设备设置",
+        navAdmin: "管理员",
+        manualSosLogTag: "【手动SOS紧急报警】",
+        autoAlarmLogTag: "【系统自动异常告警】"
       },
       en: {
-        disclaimer: "CES 2028 Demonstration Prototype - Not for Clinical Medical Diagnosis",
-        appTitle: "AI Rehabilitation Secondary Injury Risk Warning System via Dual-State Sensing",
-        appSubtitle: "CES 2028 Interactive Exhibition Demo | Real-Time MediaPipe Edge Vision",
+        disclaimer: "CES 2028 Exhibition Demonstration Prototype - Not for Clinical Medical Diagnosis",
+        appTitle: "AI Rehabilitation Secondary Injury Risk Early Warning System",
+        appSubtitle: "CES 2028 Interactive Exhibition Demo | MediaPipe Edge Vision",
         sysOnline: "SYSTEM ONLINE",
-        visionTitle: "Local Visual Pose Perception Engine (MediaPipe Pose)",
-        localPrivacy: "Edge Computing Privacy Guard",
-        maskEnabled: "Screen Mask Protection Active",
-        maskSub: "AI continues pose calculation in background to protect user privacy",
-        streamStatus: "Simulated Exhibition Feed",
-        privacyNotice: "Video feed and 33 keypoints are processed locally in browser. No cloud upload, only alert signals emitted.",
-        labelInputSource: "Video Input Source",
+        visionTitle: "Local Vision Pose Engine (MediaPipe Pose)",
+        localPrivacy: "Edge Privacy Guard",
+        maskEnabled: "Screen Mask Protection Enabled",
+        maskSub: "AI continuously runs skeleton estimation in background for privacy",
+        streamStatusSim: "Simulated Demonstration Feed",
+        streamStatusWebcam: "Live Webcam Feed",
+        streamStatusFile: "Local Video File Feed",
+        privacyNotice: "Video frames & 33 keypoints are processed locally in browser without uploading to servers.",
+        labelInputSource: "Video Source Selection",
         btnMask: "Screen Mask",
         btnStart: "Start Analysis",
-        poseDetectLabel: "Pose Anomaly Detection Status:",
-        tagFatigue: "Fatigue Eyes Closed",
+        btnStop: "Stop Analysis",
+        poseDetectLabel: "Pose Anomaly Modules:",
+        tagFatigue: "Closed Eyes",
         tagYawn: "Yawning",
         tagHeadDown: "Head Down",
-        tagFall: "Fall Detection",
-        tagStationary: "Prolonged Stationary",
-        tagHyperflexion: "Joint Hyperflexion",
-        riskPanelTitle: "Dual-State Fusion Risk Warning Level",
+        tagFall: "Fall Detected",
+        tagStationary: "Stationary",
+        tagHyperflexion: "Knee Hyperflex",
+        riskPanelTitle: "Human-Machine Dual-State Risk Level",
         riskL1: "Safe Training",
         riskL2: "Caution State",
-        riskL3: "High-Risk Warning",
-        sosBtn: "EMERGENCY SOS ALARM",
-        sosHint: "Optimized for iPad & touchscreens: Tap to instantly trigger broadcast & alarms",
-        alarmPanelTitle: "Sound & Light Alarm Matrix (Korean Safety Standard)",
-        btLightStatus: "Bluetooth Strobe: Disconnected",
-        swAlarmSound: "Alarm Sound",
-        swVoice: "Voice TTS",
-        swSpeaker: "Speaker",
-        btnBtLight: "Connect Strobe",
+        riskL3: "High Injury Risk",
+        sosBtn: "EMERGENCY SOS (ONE-CLICK)",
+        sosHint: "Optimized for iPad touch: Triggers siren, speech prompt & visual strobe",
+        alarmPanelTitle: "Korean Safety System Alarm Matrix",
+        btLightUnconnected: "BT Warning Light: Disconnected",
+        btLightConnected: "BT Warning Light: Connected",
+        swAlarmSound: "Siren Sound",
+        swVoice: "Voice Prompt",
+        swSpeaker: "Speaker On",
+        btnBtLight: "Connect Light",
         btnTestAlarm: "Test Alarm",
-        logTitle: "Alarm Logs",
-        noLogs: "No alarm recorded",
-        bleTitle: "Smart Band BLE Real-Time Physiological Data",
+        logTitle: "Alarm Event History Log",
+        noLogs: "No alarm recorded yet",
+        bleTitle: "Smart Band BLE Physiological Data",
         paramHr: "Heart Rate",
         paramBp: "Blood Pressure",
         paramTemp: "Temperature",
-        paramImu: "Joint Angle",
+        paramImu: "Knee Angle",
         codeNoteTitle: "Hardware API Hook",
-        kneeChartTitle: "Real-Time Joint Angle & Motion Trajectory Visualization",
+        kneeChartTitle: "Real-time Knee Joint Trajectory & Angle Visualizer",
         arch1Title: "Dual-State Edge Sensing Architecture",
-        arch1Desc: "Fusing visual pose and pulse IMU sensors for zero-latency edge inference. Zero cloud upload ensures absolute privacy.",
-        arch2Title: "Proactive Secondary Injury Warning",
-        arch2Desc: "3D risk models predict joint hyperflexion and fatigue 1.2 seconds prior to strain or secondary fracture.",
-        arch3Title: "Three-Tier Alarm & Rescue Linkage",
-        arch3Desc: "Bluetooth strobe light, hospital TTS voice call, and large screen SOS integration for clinics and home care.",
-        crossChartTitle: "5-Fold Cross Validation Accuracy",
+        arch1Desc: "Integrates computer vision and wearable sensors for zero-latency edge inference with zero cloud video upload.",
+        arch2Title: "Active Injury Prevention",
+        arch2Desc: "3D risk modeling predicts knee hyperflexion and falls 1.2s before impact to halt unsafe exercise.",
+        arch3Title: "Tri-Mode Sound & Light Intervention",
+        arch3Desc: "Seamless integration with wireless strobe lights, TTS broadcast, and emergency room SOS dashboard.",
+        crossChartTitle: "5-Fold Cross Validation Accuracy Score",
         compTitle: "Competitor Comparison Matrix",
-        thFeature: "Feature",
+        thFeature: "Feature Dimension",
         thOur: "Our System",
         thCompA: "Traditional Vision",
         thCompB: "Wearable Only",
-        tdF1: "Sensing Dimension",
-        tdF2: "Injury Prevention",
+        tdF1: "Sensing Modal",
+        tdF2: "Injury Warning",
         tdF3: "Data Privacy",
-        tdF4: "Deployment Cost",
+        tdF4: "Cost",
         clinicalTitle: "Clinical Application Scenarios",
-        cli1: "<b>Orthopedic Rehabilitation:</b> Post-op ACL reconstruction & TKA joint angle monitoring.",
-        cli2: "<b>Neurological Rehab:</b> Stroke hemiplegia gait training fall risk & compensation warning.",
-        cli3: "<b>Home Care:</b> Unattended emergency SOS remote call & sound-light deterrence.",
+        cli1: "<b>Orthopedic Rehab:</b> Post ACL reconstruction and TKA knee flexion angle tracking.",
+        cli2: "<b>Neurology Center:</b> Fall risk and fatigue compensation warning during gait training.",
+        cli3: "<b>Home Elder Care:</b> Remote SOS alert and sound-light warning in unmonitored home settings.",
         roadmapTitle: "Development Milestones",
-        rm1: "Complete 120-patient multi-center clinical trials",
+        rm1: "Completed 120-case clinical trial in tertiary hospitals",
         rm2: "CES 2028 Global Debut & Class II Medical Device Filing",
-        rm3: "Deploy in 50+ rehab centers across Korea & North America",
-        faqTitle: "Frequently Asked Questions",
-        faqQ1: "Q: Why is cloud video upload unnecessary?",
-        faqA1: "A: The system runs WebAssembly+MediaPipe locally in the browser, protecting patient privacy and reducing latency.",
-        faqQ2: "Q: How to integrate with hospital nurse stations?",
-        faqA2: "A: Standard WebSocket/MQTT interfaces automatically transmit alerts to hospital HIS/PACS and therapist wearables."
+        rm3: "Deployed algorithm in 50+ rehab centers in KR/US",
+        faqTitle: "Frequently Asked Questions (FAQ)",
+        faqQ1: "Q: Why doesn't it upload video to servers?",
+        faqA1: "A: WebAssembly and MediaPipe run locally inside the client browser, completely protecting medical privacy.",
+        faqQ2: "Q: How to integrate into existing hospital systems?",
+        faqA2: "A: Standard WebSockets/MQTT push alerts directly to therapist smartwatches and HIS systems.",
+        modalSosTitle: "EMERGENCY SOS TRIGGERED",
+        modalSosDesc: "High-priority alert sent to central care station and nearby therapist terminals!",
+        modalTimeLabel: "Timestamp:",
+        modalTypeLabel: "Alert Type:",
+        modalTypeVal: "Manual SOS Emergency Alert",
+        btnCloseModal: "Acknowledge & Dismiss Alarm",
+        navHome: "Home",
+        navAlarm: "Alarm Control",
+        navSettings: "Device Settings",
+        navAdmin: "Admin Console",
+        manualSosLogTag: "[MANUAL SOS ALERT]",
+        autoAlarmLogTag: "[AUTO RISK ALARM]"
       },
       ko: {
-        disclaimer: "CES 2028 시연 프로토타입 - 임상적 의료 진단용이 아님",
-        appTitle: "인간-기기 이중 상태 인지 기반 재활 훈련 2차 손상 위험 예측 AI 시스템",
-        appSubtitle: "CES 2028 인터랙티브 전시 데모 | 실시간 MediaPipe 엣지 비전",
-        sysOnline: "시스템 온라인 (SYSTEM ONLINE)",
-        visionTitle: "로컬 비전 자세 인지 엔진 (MediaPipe Pose)",
-        localPrivacy: "엣지 컴퓨팅 프라이버시 보호",
-        maskEnabled: "화면 가림 보호 활성화됨",
-        maskSub: "사용자 프라이버시 보호를 위해 백그라운드에서 AI 골격 키포인트 연산 유지",
-        streamStatus: "시뮬레이션 전시 피드",
-        privacyNotice: "비디오 피드와 33개 키포인트 데이터는 브라우저에서 로컬로 처리되며 클라우드 업로드 없이 경고 신호만 출력됩니다.",
-        labelInputSource: "비디오 소스 선택",
-        btnMask: "화면 가림",
+        disclaimer: "CES 2028 전시용 시연 프로토타입 - 임상 의료 진단 기기가 아닙니다",
+        appTitle: "인간-기계 이중 감지 AI 재활 2차 손상 위험 경보 시스템",
+        appSubtitle: "CES 2028 인터랙티브 데모 | MediaPipe 엣지 실시간 연산",
+        sysOnline: "시스템 정상 작동 중",
+        visionTitle: "로컬 비전 자세 감지 엔진 (MediaPipe Pose)",
+        localPrivacy: "엣지 프라이버시 보안",
+        maskEnabled: "화면 마스킹 보호 활성화됨",
+        maskSub: "개인정보 보호를 위해 AI가 백그라운드에서 골격 포인트를 지속 계산합니다",
+        streamStatusSim: "시뮬레이션 시연 피드",
+        streamStatusWebcam: "웹캠 라이브 피드",
+        streamStatusFile: "로컬 비디오 피드",
+        privacyNotice: "비디오 및 33개 관절 포인트 데이터는 서버 업로드 없이 브라우저 로컬에서 즉시 처리됩니다.",
+        labelInputSource: "비디오 입력 소스 선택",
+        btnMask: "화면 가리기",
         btnStart: "분석 시작",
-        poseDetectLabel: "자세 이상 감지 모듈 상태:",
-        tagFatigue: "피로 눈깜박임",
+        btnStop: "분석 중지",
+        poseDetectLabel: "자세 감지 감지 모듈:",
+        tagFatigue: "피로 감기",
         tagYawn: "하품",
         tagHeadDown: "고개 숙임",
         tagFall: "낙상 감지",
         tagStationary: "장시간 정지",
-        tagHyperflexion: "관절 과다굴곡",
-        riskPanelTitle: "인간-기기 융합 위험 경고 등급",
+        tagHyperflexion: "무릎 과굴곡",
+        riskPanelTitle: "인간-기계 이중 상태 위험 경보 등급",
         riskL1: "안전 훈련",
         riskL2: "주의 상태",
-        riskL3: "고위험 손상 경고",
-        sosBtn: "긴급 SOS 비상벨 (EMERGENCY SOS)",
-        sosHint: "iPad 및 터치스크린 최적화: 클릭 즉시 비상 방송 및 경보 작동",
-        alarmPanelTitle: "한국형 안전 모니터링 시스템 모듈 (Sound & Light Alarm Matrix)",
-        btLightStatus: "블루투스 경광등: 미연결",
+        riskL3: "고위험 손상 경보",
+        sosBtn: "원클릭 SOS 긴급 알람 (EMERGENCY SOS)",
+        sosHint: "iPad 터치 화면 최적화: 클릭 즉시 비상 경보음 및 음성 안내 출력",
+        alarmPanelTitle: "한국 안전 모니터링 시스템 음향/광학 경보 모듈",
+        btLightUnconnected: "블루투스 경고등: 미연결",
+        btLightConnected: "블루투스 경고등: 연결됨",
         swAlarmSound: "경보음",
         swVoice: "음성 안내",
         swSpeaker: "스피커",
-        btnBtLight: "경광등 연결",
+        btnBtLight: "경고등 연결",
         btnTestAlarm: "경보 테스트",
-        logTitle: "경고 이벤트 로그 (Alarm Logs)",
-        noLogs: "기록된 경고 없음",
-        bleTitle: "스마트 밴드 BLE 실시간 생체 데이터",
+        logTitle: "경보 이벤트 로그 (Alarm History)",
+        noLogs: "기록된 경보 이벤트가 없습니다",
+        bleTitle: "스마트 밴드 BLE 생체 데이터",
         paramHr: "실시간 심박수",
         paramBp: "혈압",
         paramTemp: "체온",
-        paramImu: "관절 각도",
-        codeNoteTitle: "하드웨어 연동 인터페이스 (Hardware API Hook)",
-        kneeChartTitle: "관절 실시간 굴곡 각도 및 자세 궤적 시각화",
-        arch1Title: "인간-기기 이중 상태 엣지 인지 아키텍처",
-        arch1Desc: "시각적 자세와 맥박 IMU 센서를 융합하여 0 지연 엣지 추론 구현. 영상 데이터 무저장·무업로드로 프라이버시 원천 보장.",
-        arch2Title: "2차 손상 사전 경고",
-        arch2Desc: "관절 과다굴곡, 낙상, 피로 보상 3차원 위험 모델을 구축하여 근육 부상이나 골절 발생 1.2초 전 경보 중단 트리거.",
-        arch3Title: "사운드·라이트·일렉트릭 3단계 연동 구조",
-        arch3Desc: "블루투스 무선 경광등, 원내 TTS 음성 호출 및 대형 화면 SOS 즉시 응동으로 재활센터와 가정 환자 보호.",
-        crossChartTitle: "5분할 교차 검증 알고리즘 정확도 (5-Fold Cross Validation)",
-        compTitle: "경쟁사 능력 비교 (Competitor Comparison Matrix)",
-        thFeature: "비교 항목 (Feature)",
-        thOur: "당사 시스템 (Our System)",
-        thCompA: "기존 시각 재활",
-        thCompB: "단순 웨어러블 기기",
-        tdF1: "인지 차원",
-        tdF2: "2차 손상 예방",
-        tdF3: "데이터 프라이버시",
+        paramImu: "무릎 관절 각도",
+        codeNoteTitle: "하드웨어 API 연동 규격",
+        kneeChartTitle: "무릎 관절 궤적 및 각도 시각화",
+        arch1Title: "이중 상태 엣지 감지 아키텍처",
+        arch1Desc: "컴퓨터 비전과 착용형 센서를 융합하여 데이터 클라우드 전송 없이 엣지에서 즉시 추론합니다.",
+        arch2Title: "2차 손상 능동 예방",
+        arch2Desc: "관절 과굴곡 및 낙상 위험을 1.2초 전에 예측하여 위험 행동을 사전 차단합니다.",
+        arch3Title: "음향/광학 3단계 연동 구조",
+        arch3Desc: "무선 경고등, 음성 안내, 메인 SOS 대시보드와 즉시 연동되어 이중 안전망을 제공합니다.",
+        crossChartTitle: "5-Fold 교차 검증 알고리즘 정확도",
+        compTitle: "경쟁사 매트릭스 비교",
+        thFeature: "비교 항목",
+        thOur: "본 시스템",
+        thCompA: "기존 비전 재활",
+        thCompB: "착용형 전용",
+        tdF1: "감지 방식",
+        tdF2: "2차 손상 경보",
+        tdF3: "개인정보 보호",
         tdF4: "구축 비용",
         clinicalTitle: "임상 적용 시나리오",
-        cli1: "<b>정형외과 재활:</b> 전방십자가인대(ACL) 재건술 후 및 인공슬관절(TKA) 각도 모니터링.",
-        cli2: "<b>신경재활 센터:</b> 뇌졸중 편마비 환자 보행 훈련 시 낙상 위험 및 보상 자세 경고.",
-        cli3: "<b>재가 복지:</b> 무인 간병 환경에서의 긴급 SOS 원격 호출 및 경보 보호.",
-        roadmapTitle: "개발 마일스톤",
-        rm1: "상급종합병원 120례 임상 교차 비교 테스트 완료",
-        rm2: "CES 2028 글로벌 데뷔 및 의료기기 2등급 인증 신청",
-        rm3: "한국 및 북미 50개 이상 재활 기관과 알고리즘 라이선스 및 장비 공급 계약",
+        cli1: "<b>정형외과 재활:</b> 십자인대(ACL) 및 무릎 관절 치환술 후 각도 모니터링.",
+        cli2: "<b>신경 재활 센터:</b> 뇌졸중 편마비 환자 보행 훈련 시 낙상 및 피로 경보.",
+        cli3: "<b>재가 요양 재활:</b> 무인 환경 원격 SOS 긴급 호출 및 음향 경보 시스템.",
+        roadmapTitle: "주요 마일스톤",
+        rm1: "상급종합병원 120례 임상 비교 시험 완료",
+        rm2: "CES 2028 최초 공개 및 의료기기 2등급 신청",
+        rm3: "한국 및 북미 50여 개 재활 센터 라이선스 계약",
         faqTitle: "자주 묻는 질문 (FAQ)",
-        faqQ1: "Q: 비디오를 서버에 업로드하지 않는 이유는 무엇인가요?",
-        faqA1: "A: 본 시스템은 브라우저 내에서 WebAssembly+MediaPipe로 모든 골격 키포인트를 연산하여 환자의 프라이버시를 보장하고 지연을 줄입니다.",
-        faqQ2: "Q: 병원 간호사 스테이션 시스템과 어떻게 연동하나요?",
-        faqA2: "A: 표준 WebSocket/MQTT 인터페이스를 제공하여 경고 발생 시 병원 HIS/PACS 및 치료사 밴드로 신호를 자동 전송합니다."
+        faqQ1: "Q: 왜 비디오를 서버로 전송하지 않나요?",
+        faqA1: "A: 본 시스템은 브라우저 내에서 웹어셈블리로 동작하여 환자의 의료 프라이버시를 완벽히 보호합니다.",
+        faqQ2: "Q: 기존 병원 시스템과 어떻게 연동하나요?",
+        faqA2: "A: 표준 WebSocket 및 MQTT 규격을 지원하여 치료사 스마트워치로 즉시 알림을 전송합니다.",
+        modalSosTitle: "긴급 SOS 구호 요청 발생",
+        modalSosDesc: "중앙 재활 관제 센터 및 현장 치료사에게 최우선 긴급 신호를 전송했습니다!",
+        modalTimeLabel: "발생 시간:",
+        modalTypeLabel: "경보 유형:",
+        modalTypeVal: "수동 원클릭 SOS 긴급 요청",
+        btnCloseModal: "경보 확인 및 해제",
+        navHome: "메인",
+        navAlarm: "경보 관리",
+        navSettings: "설정",
+        navAdmin: "관리자",
+        manualSosLogTag: "[수동 SOS 긴급 알람]",
+        autoAlarmLogTag: "[자동 위험 경보]"
       }
     };
 
     let currentLang = 'zh';
+
     function setLanguage(lang) {
       currentLang = lang;
+      const dict = i18n[lang];
+
+      document.getElementById('txt-disclaimer').innerText = dict.disclaimer;
+      document.getElementById('txt-app-title').innerText = dict.appTitle;
+      document.getElementById('txt-app-subtitle').innerText = dict.appSubtitle;
+      document.getElementById('txt-sys-online').innerText = dict.sysOnline;
+
+      document.getElementById('txt-vision-title').innerText = dict.visionTitle;
+      document.getElementById('txt-local-privacy').innerText = dict.localPrivacy;
+      document.getElementById('txt-mask-enabled').innerText = dict.maskEnabled;
+      document.getElementById('txt-mask-sub').innerText = dict.maskSub;
+      document.getElementById('txt-privacy-notice').innerText = dict.privacyNotice;
+      document.getElementById('txt-label-input-source').innerText = dict.labelInputSource;
+      document.getElementById('txt-btn-mask').innerText = dict.btnMask;
+      document.getElementById('txt-btn-start').innerText = isAnalyzing ? dict.btnStop : dict.btnStart;
+      document.getElementById('txt-pose-detect-label').innerText = dict.poseDetectLabel;
+
+      document.getElementById('tag-fatigue').innerText = dict.tagFatigue;
+      document.getElementById('tag-yawn').innerText = dict.tagYawn;
+      document.getElementById('tag-head-down').innerText = dict.tagHeadDown;
+      document.getElementById('tag-fall').innerText = dict.tagFall;
+      document.getElementById('tag-stationary').innerText = dict.tagStationary;
+      document.getElementById('tag-hyperflexion').innerText = dict.tagHyperflexion;
+
+      document.getElementById('txt-risk-panel-title').innerText = dict.riskPanelTitle;
+      document.getElementById('txt-risk-l1').innerText = dict.riskL1;
+      document.getElementById('txt-risk-l2').innerText = dict.riskL2;
+      document.getElementById('txt-risk-l3').innerText = dict.riskL3;
+      document.getElementById('txt-sos-btn').innerText = dict.sosBtn;
+      document.getElementById('txt-sos-hint').innerText = dict.sosHint;
+
+      document.getElementById('txt-alarm-panel-title').innerText = dict.alarmPanelTitle;
+      document.getElementById('txt-sw-alarm-sound').innerText = dict.swAlarmSound;
+      document.getElementById('txt-sw-voice').innerText = dict.swVoice;
+      document.getElementById('txt-sw-speaker').innerText = dict.swSpeaker;
+      document.getElementById('txt-btn-bt-light').innerText = dict.btnBtLight;
+      document.getElementById('txt-btn-test-alarm').innerText = dict.btnTestAlarm;
+      document.getElementById('txt-log-title').innerText = dict.logTitle;
+
+      document.getElementById('txt-ble-title').innerText = dict.bleTitle;
+      document.getElementById('txt-param-hr').innerText = dict.paramHr;
+      document.getElementById('txt-param-bp').innerText = dict.paramBp;
+      document.getElementById('txt-param-temp').innerText = dict.paramTemp;
+      document.getElementById('txt-param-imu').innerText = dict.paramImu;
+      document.getElementById('txt-code-note-title').innerText = dict.codeNoteTitle;
+      document.getElementById('txt-knee-chart-title').innerText = dict.kneeChartTitle;
+
+      document.getElementById('txt-arch-1-title').innerText = dict.arch1Title;
+      document.getElementById('txt-arch-1-desc').innerText = dict.arch1Desc;
+      document.getElementById('txt-arch-2-title').innerText = dict.arch2Title;
+      document.getElementById('txt-arch-2-desc').innerText = dict.arch2Desc;
+      document.getElementById('txt-arch-3-title').innerText = dict.arch3Title;
+      document.getElementById('txt-arch-3-desc').innerText = dict.arch3Desc;
+
+      document.getElementById('txt-cross-chart-title').innerText = dict.crossChartTitle;
+      document.getElementById('txt-comp-title').innerText = dict.compTitle;
+      document.getElementById('th-feature').innerText = dict.thFeature;
+      document.getElementById('th-our').innerText = dict.thOur;
+      document.getElementById('th-comp-a').innerText = dict.thCompA;
+      document.getElementById('th-comp-b').innerText = dict.thCompB;
+      document.getElementById('td-f1').innerText = dict.tdF1;
+      document.getElementById('td-f2').innerText = dict.tdF2;
+      document.getElementById('td-f3').innerText = dict.tdF3;
+      document.getElementById('td-f4').innerText = dict.tdF4;
+
+      document.getElementById('txt-clinical-title').innerText = dict.clinicalTitle;
+      document.getElementById('txt-cli-1').innerHTML = dict.cli1;
+      document.getElementById('txt-cli-2').innerHTML = dict.cli2;
+      document.getElementById('txt-cli-3').innerHTML = dict.cli3;
+
+      document.getElementById('txt-roadmap-title').innerText = dict.roadmapTitle;
+      document.getElementById('txt-rm-1').innerText = dict.rm1;
+      document.getElementById('txt-rm-2').innerText = dict.rm2;
+      document.getElementById('txt-rm-3').innerText = dict.rm3;
+
+      document.getElementById('txt-faq-title').innerText = dict.faqTitle;
+      document.getElementById('txt-faq-q1').innerText = dict.faqQ1;
+      document.getElementById('txt-faq-a1').innerText = dict.faqA1;
+      document.getElementById('txt-faq-q2').innerText = dict.faqQ2;
+      document.getElementById('txt-faq-a2').innerText = dict.faqA2;
+
+      document.getElementById('txt-modal-sos-title').innerText = dict.modalSosTitle;
+      document.getElementById('txt-modal-sos-desc').innerText = dict.modalSosDesc;
+      document.getElementById('txt-modal-time-label').innerText = dict.modalTimeLabel;
+      document.getElementById('txt-modal-type-label').innerText = dict.modalTypeLabel;
+      document.getElementById('txt-modal-type-val').innerText = dict.modalTypeVal;
+      document.getElementById('txt-btn-close-modal').innerText = dict.btnCloseModal;
+
+      document.getElementById('txt-nav-home').innerText = dict.navHome;
+      document.getElementById('txt-nav-alarm').innerText = dict.navAlarm;
+      document.getElementById('txt-nav-settings').innerText = dict.navSettings;
+      document.getElementById('txt-nav-admin').innerText = dict.navAdmin;
+
       ['zh', 'en', 'ko'].forEach(l => {
         const btn = document.getElementById(`lang-btn-${l}`);
-        if (btn) {
-          if (l === lang) {
-            btn.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all bg-cyan-600 text-white shadow-sm";
-          } else {
-            btn.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all text-gray-600 hover:text-gray-900";
-          }
+        if (l === lang) {
+          btn.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all bg-cyan-600 text-white";
+        } else {
+          btn.className = "px-2.5 py-1 text-xs font-medium rounded-md transition-all text-gray-600 hover:text-gray-900";
         }
       });
+    }
 
-      const t = translations[lang];
-      if (!t) return;
+    /* =========================================================================
+       2. WEB AUDIO SYNTHESIZER
+       ========================================================================= */
+    let audioCtx = null;
 
-      const map = {
-        'txt-disclaimer': t.disclaimer,
-        'txt-app-title': t.appTitle,
-        'txt-app-subtitle': t.appSubtitle,
-        'txt-sys-online': t.sysOnline,
-        'txt-vision-title': t.visionTitle,
-        'txt-local-privacy': t.localPrivacy,
-        'txt-mask-enabled': t.maskEnabled,
-        'txt-mask-sub': t.maskSub,
-        'cam-status-dot': '',
-        'txt-stream-status': t.streamStatus,
-        'txt-privacy-notice': t.privacyNotice,
-        'txt-label-input-source': t.labelInputSource,
-        'txt-btn-mask': t.btnMask,
-        'txt-btn-start': t.btnStart,
-        'txt-pose-detect-label': t.poseDetectLabel,
-        'tag-fatigue': t.tagFatigue,
-        'tag-yawn': t.tagYawn,
-        'tag-head-down': t.tagHeadDown,
-        'tag-fall': t.tagFall,
-        'tag-stationary': t.tagStationary,
-        'tag-hyperflexion': t.tagHyperflexion,
-        'txt-risk-panel-title': t.riskPanelTitle,
-        'txt-risk-l1': t.riskL1,
-        'txt-risk-l2': t.riskL2,
-        'txt-risk-l3': t.riskL3,
-        'txt-sos-btn': t.sosBtn,
-        'txt-sos-hint': t.sosHint,
-        'txt-alarm-panel-title': t.alarmPanelTitle,
-        'txt-bt-light-status': t.btLightStatus,
-        'txt-sw-alarm-sound': t.swAlarmSound,
-        'txt-sw-voice': t.swVoice,
-        'txt-sw-speaker': t.swSpeaker,
-        'txt-btn-bt-light': t.btnBtLight,
-        'txt-btn-test-alarm': t.btnTestAlarm,
-        'txt-log-title': t.logTitle,
-        'txt-no-logs': t.noLogs,
-        'txt-ble-title': t.bleTitle,
-        'txt-param-hr': t.paramHr,
-        'txt-param-bp': t.paramBp,
-        'txt-param-temp': t.paramTemp,
-        'txt-param-imu': t.paramImu,
-        'txt-code-note-title': t.codeNoteTitle,
-        'txt-knee-chart-title': t.kneeChartTitle,
-        'txt-arch-1-title': t.arch1Title,
-        'txt-arch-1-desc': t.arch1Desc,
-        'txt-arch-2-title': t.arch2Title,
-        'txt-arch-2-desc': t.arch2Desc,
-        'txt-arch-3-title': t.arch3Title,
-        'txt-arch-3-desc': t.arch3Desc,
-        'txt-cross-chart-title': t.crossChartTitle,
-        'txt-comp-title': t.compTitle,
-        'th-feature': t.thFeature,
-        'th-our': t.thOur,
-        'th-comp-a': t.thCompA,
-        'th-comp-b': t.thCompB,
-        'td-f1': t.tdF1,
-        'td-f2': t.tdF2,
-        'td-f3': t.tdF3,
-        'td-f4': t.tdF4,
-        'txt-clinical-title': t.clinicalTitle,
-        'txt-cli-1': t.cli1,
-        'txt-cli-2': t.cli2,
-        'txt-cli-3': t.cli3,
-        'txt-roadmap-title': t.roadmapTitle,
-        'txt-rm-1': t.rm1,
-        'txt-rm-2': t.rm2,
-        'txt-rm-3': t.rm3,
-        'txt-faq-title': t.faqTitle,
-        'txt-faq-q1': t.faqQ1,
-        'txt-faq-a1': t.faqA1,
-        'txt-faq-q2': t.faqQ2,
-        'txt-faq-a2': t.faqA2
+    function playAlarmSound(type = 'sos') {
+      if (!document.getElementById('sw-sound').checked) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'sos') {
+          osc.type = 'sawtooth';
+          const now = audioCtx.currentTime;
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+          osc.frequency.exponentialRampToValueAtTime(440, now + 0.6);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+          osc.start(now);
+          osc.stop(now + 0.8);
+        } else {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        if (document.getElementById('sw-voice').checked && 'speechSynthesis' in window) {
+          const msgText = currentLang === 'zh' ? "警告，检测到高风险训练动作" : 
+                          (currentLang === 'ko' ? "경고, 고위험 재활 동작이 감지되었습니다" : "Warning, high risk motion detected");
+          const utterance = new SpeechSynthesisUtterance(msgText);
+          utterance.lang = currentLang === 'zh' ? 'zh-CN' : (currentLang === 'ko' ? 'ko-KR' : 'en-US');
+          window.speechSynthesis.speak(utterance);
+        }
+      } catch(e) {
+        console.warn("Audio Context error:", e);
+      }
+    }
+
+    /* =========================================================================
+       3. ALARM LOGGING SYSTEM
+       ========================================================================= */
+    let alarmLogs = [];
+
+    function addAlarmLog(type, detail) {
+      const timestamp = new Date().toLocaleTimeString();
+      const dict = i18n[currentLang];
+      const tagText = type === 'SOS' ? dict.manualSosLogTag : dict.autoAlarmLogTag;
+      
+      const logItem = {
+        time: timestamp,
+        type: tagText,
+        detail: detail,
+        isSos: type === 'SOS'
       };
 
-      for (const [id, text] of Object.entries(map)) {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = text;
+      alarmLogs.unshift(logItem);
+      renderAlarmLogs();
+    }
+
+    function renderAlarmLogs() {
+      const container = document.getElementById('alarm-log-container');
+      const countLabel = document.getElementById('log-count');
+      countLabel.innerText = `${alarmLogs.length} events`;
+
+      if (alarmLogs.length === 0) {
+        container.innerHTML = `<div class="text-gray-600 text-center py-2" id="txt-no-logs">${i18n[currentLang].noLogs}</div>`;
+        return;
+      }
+
+      container.innerHTML = alarmLogs.map(log => `
+        <div class="flex items-center justify-between py-1 border-b border-gray-200 ${log.isSos ? 'text-red-700 font-bold bg-red-50 px-1 rounded' : 'text-amber-700'}">
+          <span><span class="text-gray-600 mr-2">[${log.time}]</span>${log.type} ${log.detail}</span>
+          <i class="fa-solid ${log.isSos ? 'fa-triangle-exclamation text-red-600' : 'fa-triangle-exclamation text-amber-600'} text-xs"></i>
+        </div>
+      `).join('');
+    }
+
+    function clearAlarmLog() {
+      alarmLogs = [];
+      renderAlarmLogs();
+    }
+
+    /* =========================================================================
+       4. SOS & RISK LEVEL HANDLERS
+       ========================================================================= */
+    function triggerManualSOS() {
+      playAlarmSound('sos');
+      addAlarmLog('SOS', currentLang === 'zh' ? '患者/陪护手动触发紧急求救' : 'Manual emergency call triggered');
+      document.getElementById('modal-sos-timestamp').innerText = new Date().toLocaleString();
+      document.getElementById('sos-modal').classList.remove('hidden');
+      setRiskLevel(3);
+    }
+
+    function closeSOSModal() {
+      document.getElementById('sos-modal').classList.add('hidden');
+      setRiskLevel(1);
+    }
+
+    function setRiskLevel(level) {
+      const c1 = document.getElementById('risk-card-1');
+      const c2 = document.getElementById('risk-card-2');
+      const c3 = document.getElementById('risk-card-3');
+
+      c1.className = "p-3 rounded-xl border border-emerald-200 bg-white text-center transition-all opacity-40";
+      c2.className = "p-3 rounded-xl border border-amber-200 bg-white text-center transition-all opacity-40";
+      c3.className = "p-3 rounded-xl border border-red-200 bg-white text-center transition-all opacity-40";
+
+      if (level === 1) {
+        c1.className = "p-3 rounded-xl border border-emerald-400 bg-emerald-50 text-center transition-all opacity-100 shadow-lg shadow-emerald-500/20";
+      } else if (level === 2) {
+        c2.className = "p-3 rounded-xl border border-amber-400 bg-amber-50 text-center transition-all opacity-100 shadow-lg shadow-amber-500/20";
+      } else if (level === 3) {
+        c3.className = "p-3 rounded-xl border border-red-400 bg-red-50 text-center transition-all opacity-100 shadow-lg shadow-red-500/20 animate-pulse";
       }
     }
 
-    /* --- Tab Switching Logic --- */
-    function switchTab(tabId) {
-      const tabs = ['home', 'library', 'patient', 'history', 'replay', 'settings', 'alarm', 'admin', 'about'];
-      tabs.forEach(t => {
-        const content = document.getElementById(`tab-content-${t}`);
-        const btn = document.getElementById(`nav-btn-${t}`);
-        if (content) {
-          if (t === tabId) {
-            content.classList.remove('hidden');
-          } else {
-            content.classList.add('hidden');
-          }
-        }
-        if (btn) {
-          if (t === tabId) {
-            btn.className = "px-3 py-1.5 rounded-lg font-medium transition-all bg-cyan-600 text-white shadow-sm";
-          } else {
-            btn.className = "px-3 py-1.5 rounded-lg font-medium transition-all text-gray-600 hover:text-gray-900";
-          }
-        }
-      });
+    function testAlarmSystem() {
+      playAlarmSound('warn');
+      addAlarmLog('AUTO', '声光管控功能自检程序运行正常');
     }
 
-    /* --- Application Global State & Logic --- */
+    /* =========================================================================
+       5. REAL MEDIAPIPE POSE & WEBCAM ENGINE
+       ========================================================================= */
+    let videoElement = document.getElementById('webcam-video');
+    let poseCanvas = document.getElementById('pose-canvas');
+    let poseCtx = poseCanvas.getContext('2d');
+    let kneeCanvas = document.getElementById('knee-canvas');
+    let kneeCtx = kneeCanvas.getContext('2d');
+
+    let poseEngine = null;
+    let cameraUtil = null;
     let isAnalyzing = false;
-    let screenMaskActive = false;
-    let bandMode = 'sim';
-    let alarmLogsCount = 0;
-    let selectedJoint = 'right_knee';
-    let poseInstance = null;
-    let cameraInstance = null;
+    let isProcessingFrame = false; // Lock flag to prevent concurrent send() calls causing AbortError
+    let currentSourceMode = 'sim'; // 'sim', 'webcam', 'file', 'ip'
+    let animFrameId = null;
+    let simAnglePhase = 0;
 
-    // Joint mapping configuration for 33 MediaPipe Pose keypoints
-    const jointConfigs = {
-      left_knee: { p1: 23, vertex: 25, p3: 27, nameZh: '左膝关节', nameEn: 'Left Knee', min: 70, max: 160 },
-      right_knee: { p1: 24, vertex: 26, p3: 28, nameZh: '右膝关节', nameEn: 'Right Knee', min: 70, max: 160 },
-      left_hip: { p1: 11, vertex: 23, p3: 25, nameZh: '左髋关节', nameEn: 'Left Hip', min: 60, max: 170 },
-      right_hip: { p1: 12, vertex: 24, p3: 26, nameZh: '右髋关节', nameEn: 'Right Hip', min: 60, max: 170 },
-      left_ankle: { p1: 25, vertex: 27, p3: 31, nameZh: '左踝关节', nameEn: 'Left Ankle', min: 80, max: 140 },
-      right_ankle: { p1: 26, vertex: 28, p3: 32, nameZh: '右踝关节', nameEn: 'Right Ankle', min: 80, max: 140 },
-      left_shoulder: { p1: 23, vertex: 11, p3: 13, nameZh: '左肩关节', nameEn: 'Left Shoulder', min: 40, max: 160 },
-      right_shoulder: { p1: 24, vertex: 12, p3: 14, nameZh: '右肩关节', nameEn: 'Right Shoulder', min: 40, max: 160 },
-      left_elbow: { p1: 11, vertex: 13, p3: 15, nameZh: '左肘关节', nameEn: 'Left Elbow', min: 45, max: 170 },
-      right_elbow: { p1: 12, vertex: 14, p3: 16, nameZh: '右肘关节', nameEn: 'Right Elbow', min: 45, max: 170 }
-    };
+    function resizeCanvases() {
+      poseCanvas.width = poseCanvas.parentElement.clientWidth;
+      poseCanvas.height = poseCanvas.parentElement.clientHeight;
+      kneeCanvas.width = kneeCanvas.parentElement.clientWidth;
+      kneeCanvas.height = kneeCanvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvases);
 
-    function handleJointChange() {
-      const select = document.getElementById('joint-select');
-      if (select) {
-        selectedJoint = select.value;
+    // Initialize MediaPipe Pose Core
+    function initMediaPipePose() {
+      if (typeof Pose === 'undefined') {
+        console.warn("MediaPipe Pose CDN script not loaded yet.");
+        return;
       }
+
+      poseEngine = new Pose({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+      });
+
+      poseEngine.setOptions({
+        modelComplexity: 1,
+        smoothLandmarks: true,
+        enableSegmentation: false,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+
+      poseEngine.onResults(onPoseResults);
     }
 
+    // Process MediaPipe 33 Landmark Inference Results
+    function onPoseResults(results) {
+      if (!isAnalyzing) return;
+
+      const w = poseCanvas.width;
+      const h = poseCanvas.height;
+      poseCtx.save();
+      poseCtx.clearRect(0, 0, w, h);
+
+      // Draw original video frame if mask is off
+      const screenMask = document.getElementById('screen-mask');
+      if (screenMask.classList.contains('hidden') && results.image) {
+        poseCtx.drawImage(results.image, 0, 0, w, h);
+      } else {
+        // Light background when screen mask is active
+        poseCtx.fillStyle = CANVAS_MASK_BG;
+        poseCtx.fillRect(0, 0, w, h);
+      }
+
+      if (results.poseLandmarks) {
+        // Draw Skeleton Connections using MediaPipe Utilities if available
+        if (window.drawConnectors && window.drawLandmarks) {
+          drawConnectors(poseCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#0891b2', lineWidth: 3 });
+          drawLandmarks(poseCtx, results.poseLandmarks, { color: '#2563eb', fillColor: '#ffffff', lineWidth: 2, radius: 4 });
+        } else {
+          // Manual Keypoint Drawing Fallback
+          results.poseLandmarks.forEach(lm => {
+            poseCtx.fillStyle = '#0891b2';
+            poseCtx.beginPath();
+            poseCtx.arc(lm.x * w, lm.y * h, 4, 0, Math.PI * 2);
+            poseCtx.fill();
+          });
+        }
+
+        // Calculate Knee Flexion Angle (Hip -> Knee -> Ankle)
+        // Right Leg: Hip 24, Knee 26, Ankle 28
+        const hip = results.poseLandmarks[24];
+        const knee = results.poseLandmarks[26];
+        const ankle = results.poseLandmarks[28];
+
+        if (hip && knee && ankle) {
+          const kneeAngle = Math.round(calculateAngle(hip, knee, ankle));
+          document.getElementById('val-knee-angle').innerText = kneeAngle;
+          document.getElementById('knee-angle-display').innerText = `ANGLE: ${kneeAngle}°`;
+          
+          renderKneeVector(kneeAngle);
+
+          // Injury Risk Assessment
+          if (kneeAngle < 75) {
+            document.getElementById('tag-hyperflexion').className = CLS_TAG_DANGER;
+            document.getElementById('knee-status-label').innerText = "警告：膝关节过度屈曲 (Hyperflexion Warning)";
+            document.getElementById('knee-status-label').className = CLS_KNEE_BAD;
+            setRiskLevel(3);
+            playAlarmSound('warn');
+          } else {
+            document.getElementById('tag-hyperflexion').className = CLS_TAG_IDLE;
+            document.getElementById('knee-status-label').innerText = "正常曲伸范围 (Normal Motion)";
+            document.getElementById('knee-status-label').className = CLS_KNEE_OK;
+            setRiskLevel(1);
+          }
+        }
+      }
+
+      poseCtx.restore();
+    }
+
+    // Compute angle between three points (A: Hip, B: Knee Pivot, C: Ankle)
     function calculateAngle(a, b, c) {
       const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
-      let angle = Math.abs(radians * 180.0 / Math.PI);
+      let angle = Math.abs((radians * 180.0) / Math.PI);
       if (angle > 180.0) {
         angle = 360.0 - angle;
       }
-      return Math.round(angle);
+      return angle;
     }
 
+    /* Video Input Selection Handler */
     function handleSourceChange() {
-      const val = document.getElementById('video-source-select').value;
+      const select = document.getElementById('video-source-select');
+      currentSourceMode = select.value;
       const fileInput = document.getElementById('video-file-input');
-      const video = document.getElementById('webcam-video');
-      
-      if (val === 'file') {
+      const statusText = document.getElementById('txt-stream-status');
+      const statusDot = document.getElementById('cam-status-dot');
+
+      fileInput.classList.add('hidden');
+
+      if (currentSourceMode === 'webcam') {
+        statusText.innerText = i18n[currentLang].streamStatusWebcam;
+        statusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+        startWebcamStream();
+      } else if (currentSourceMode === 'file') {
         fileInput.classList.remove('hidden');
+        statusText.innerText = i18n[currentLang].streamStatusFile;
+        stopWebcamStream();
+      } else if (currentSourceMode === 'sim') {
+        statusText.innerText = i18n[currentLang].streamStatusSim;
+        statusDot.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        stopWebcamStream();
       } else {
-        fileInput.classList.add('hidden');
-        if (val === 'webcam') {
-          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-              video.srcObject = stream;
-              video.play();
-              video.classList.remove('hidden');
-            }).catch(err => console.log("Webcam error:", err));
-          }
-        } else {
-          video.pause();
-          video.srcObject = null;
-          video.classList.add('hidden');
-        }
+        alert("IP-CCTV RTSP placeholder selected. Enter camera stream URL in settings.");
+        stopWebcamStream();
       }
     }
 
     function handleFileSelect(event) {
       const file = event.target.files[0];
       if (file) {
-        const video = document.getElementById('webcam-video');
-        video.src = URL.createObjectURL(file);
-        video.load();
-        video.play();
-        video.classList.remove('hidden');
+        const url = URL.createObjectURL(file);
+        videoElement.src = url;
+        videoElement.play();
+        videoElement.loop = true;
       }
+    }
+
+    // getUserMedia Webcam Starter with Exception Handling
+    async function startWebcamStream() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showCamErrorModal("当前浏览器或环境 (如 file:// 协议) 不支持 getUserMedia 摄像头权限API。");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: "user" }
+        });
+        videoElement.srcObject = stream;
+        videoElement.play();
+
+        if (window.Camera && poseEngine) {
+          cameraUtil = new Camera(videoElement, {
+            onFrame: async () => {
+              if (isAnalyzing && currentSourceMode === 'webcam' && !isProcessingFrame && poseEngine) {
+                isProcessingFrame = true;
+                try {
+                  await poseEngine.send({ image: videoElement });
+                } catch (err) {
+                  // Safely handle MediaPipe cancellation promises during stream switches/frame drops
+                  if (err && (err.name === 'AbortError' || err.message?.includes('aborted') || err.toString().includes('aborted'))) {
+                    // Suppress unhandled AbortError
+                    return;
+                  }
+                  console.warn("MediaPipe frame processing warning:", err);
+                } finally {
+                  isProcessingFrame = false;
+                }
+              }
+            },
+            width: 640,
+            height: 480
+          });
+          cameraUtil.start();
+        }
+      } catch (err) {
+        console.error("Camera Error:", err);
+        showCamErrorModal(`无法启动摄像头 (${err.name}: ${err.message})。可能是权限被拒绝或缺乏HTTPS支持。`);
+        document.getElementById('video-source-select').value = 'sim';
+        handleSourceChange();
+      }
+    }
+
+    function stopWebcamStream() {
+      isProcessingFrame = false;
+      if (videoElement.srcObject) {
+        videoElement.srcObject.getTracks().forEach(track => track.stop());
+        videoElement.srcObject = null;
+      }
+      if (cameraUtil) {
+        try {
+          cameraUtil.stop();
+        } catch (e) {
+          // Ignore cancellation errors during camera teardown
+        }
+        cameraUtil.stop = function() {}; // Prevent redundant calls
+        cameraUtil = null;
+      }
+    }
+
+    function showCamErrorModal(msg) {
+      document.getElementById('cam-error-msg').innerText = msg;
+      document.getElementById('cam-error-modal').classList.remove('hidden');
+    }
+
+    function closeCamErrorModal() {
+      document.getElementById('cam-error-modal').classList.add('hidden');
+    }
+
+    /* Start / Stop Analysis Button */
+    function toggleAnalysis() {
+      isAnalyzing = !isAnalyzing;
+      const btnText = document.getElementById('txt-btn-start');
+      const btn = document.getElementById('btn-start-analysis');
+
+      if (isAnalyzing) {
+        btnText.innerText = i18n[currentLang].btnStop;
+        btn.className = "flex-1 bg-red-600 hover:bg-red-500 text-white font-semibold text-xs py-2 px-3 rounded-lg shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 transition-all";
+        
+        if (currentSourceMode === 'sim') {
+          startSimulatedLoop();
+        }
+      } else {
+        btnText.innerText = i18n[currentLang].btnStart;
+        btn.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 px-3 rounded-lg shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all";
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+      }
+    }
+
+    // Simulated Pose Animation Loop (Fallback mode)
+    function startSimulatedLoop() {
+      function loop() {
+        if (!isAnalyzing || currentSourceMode !== 'sim') return;
+        
+        simAnglePhase += 0.04;
+        const kneeAngle = Math.round(115 + Math.sin(simAnglePhase) * 45);
+        document.getElementById('val-knee-angle').innerText = kneeAngle;
+        document.getElementById('knee-angle-display').innerText = `ANGLE: ${kneeAngle}°`;
+
+        if (Math.random() > 0.8) {
+          const hr = 75 + Math.floor(Math.sin(simAnglePhase * 2) * 15);
+          document.getElementById('val-hr').innerText = hr;
+          if (hr > 88) {
+            setRiskLevel(2);
+            document.getElementById('tag-fatigue').className = CLS_TAG_WARN;
+          } else {
+            setRiskLevel(1);
+            document.getElementById('tag-fatigue').className = CLS_TAG_IDLE;
+          }
+        }
+
+        if (kneeAngle < 75) {
+          document.getElementById('tag-hyperflexion').className = CLS_TAG_DANGER;
+          document.getElementById('knee-status-label').innerText = "警告：膝关节过度屈曲 (Hyperflexion Warning)";
+          document.getElementById('knee-status-label').className = CLS_KNEE_BAD;
+          playAlarmSound('warn');
+        } else {
+          document.getElementById('tag-hyperflexion').className = CLS_TAG_IDLE;
+          document.getElementById('knee-status-label').innerText = "正常曲伸范围 (Normal Motion)";
+          document.getElementById('knee-status-label').className = CLS_KNEE_OK;
+        }
+
+        renderSimulatedPose(kneeAngle);
+        renderKneeVector(kneeAngle);
+
+        animFrameId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    function renderSimulatedPose(kneeAngle) {
+      const w = poseCanvas.width;
+      const h = poseCanvas.height;
+      poseCtx.clearRect(0, 0, w, h);
+
+      const screenMask = document.getElementById('screen-mask');
+      if (!screenMask.classList.contains('hidden')) {
+        poseCtx.fillStyle = CANVAS_MASK_BG;
+        poseCtx.fillRect(0, 0, w, h);
+        return;
+      }
+
+      poseCtx.strokeStyle = 'rgba(8, 145, 178, 0.15)';
+      poseCtx.lineWidth = 1;
+      for (let x = 0; x < w; x += 30) {
+        poseCtx.beginPath(); poseCtx.moveTo(x, 0); poseCtx.lineTo(x, h); poseCtx.stroke();
+      }
+      for (let y = 0; y < h; y += 30) {
+        poseCtx.beginPath(); poseCtx.moveTo(0, y); poseCtx.lineTo(w, y); poseCtx.stroke();
+      }
+
+      const cx = w / 2;
+      const headY = h * 0.25;
+      const hipY = h * 0.55;
+      
+      const rad = (kneeAngle * Math.PI) / 180;
+      const legLen = h * 0.2;
+      const kneeX = cx + Math.sin(rad * 0.5) * 40;
+      const kneeY = hipY + Math.cos(rad * 0.5) * legLen;
+      const ankleX = kneeX - Math.sin(rad) * 35;
+      const ankleY = kneeY + Math.cos(rad) * legLen;
+
+      poseCtx.strokeStyle = '#0891b2';
+      poseCtx.lineWidth = 4;
+      poseCtx.lineCap = 'round';
+
+      poseCtx.beginPath(); poseCtx.arc(cx, headY - 20, 16, 0, Math.PI * 2); poseCtx.stroke();
+      poseCtx.beginPath(); poseCtx.moveTo(cx, headY); poseCtx.lineTo(cx, hipY); poseCtx.stroke();
+
+      poseCtx.strokeStyle = kneeAngle < 75 ? '#ef4444' : '#10b981';
+      poseCtx.beginPath(); poseCtx.moveTo(cx, hipY); poseCtx.lineTo(kneeX, kneeY); poseCtx.lineTo(ankleX, ankleY); poseCtx.stroke();
+
+      const joints = [
+        {x: cx, y: headY - 20}, {x: cx, y: headY}, {x: cx, y: hipY},
+        {x: kneeX, y: kneeY}, {x: ankleX, y: ankleY}
+      ];
+      joints.forEach(j => {
+        poseCtx.fillStyle = '#111827';
+        poseCtx.beginPath(); poseCtx.arc(j.x, j.y, 5, 0, Math.PI * 2); poseCtx.fill();
+      });
+    }
+
+    function renderKneeVector(angle) {
+      const w = kneeCanvas.width;
+      const h = kneeCanvas.height;
+      kneeCtx.clearRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const armLen = 65;
+
+      const rad = (angle * Math.PI) / 180;
+      const x1 = cx - armLen * Math.sin(rad / 2);
+      const y1 = cy - armLen * Math.cos(rad / 2);
+      const x2 = cx + armLen * Math.sin(rad / 2);
+      const y2 = cy + armLen * Math.cos(rad / 2);
+
+      kneeCtx.strokeStyle = '#2563eb';
+      kneeCtx.lineWidth = 6;
+      kneeCtx.beginPath(); kneeCtx.moveTo(cx, cy); kneeCtx.lineTo(x1, y1); kneeCtx.stroke();
+      kneeCtx.beginPath(); kneeCtx.moveTo(cx, cy); kneeCtx.lineTo(x2, y2); kneeCtx.stroke();
+
+      kneeCtx.fillStyle = angle < 75 ? '#ef4444' : '#10b981';
+      kneeCtx.beginPath(); kneeCtx.arc(cx, cy, 7, 0, Math.PI * 2); kneeCtx.fill();
     }
 
     function toggleScreenMask() {
-      screenMaskActive = !screenMaskActive;
       const mask = document.getElementById('screen-mask');
-      if (screenMaskActive) {
-        mask.classList.remove('hidden');
-      } else {
-        mask.classList.add('hidden');
-      }
-    }
-
-    function toggleAnalysis() {
-      isAnalyzing = !isAnalyzing;
-      const btn = document.getElementById('btn-start-analysis');
-      if (isAnalyzing) {
-        btn.className = "flex-1 bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs py-2 px-3 rounded-lg shadow-md shadow-amber-600/20 flex items-center justify-center gap-2 transition-all";
-        btn.innerHTML = `<i class="fa-solid fa-pause"></i><span>${currentLang === 'en' ? 'Pause' : (currentLang === 'ko' ? '일시정지' : '暂停分析')}</span>`;
-      } else {
-        btn.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2 px-3 rounded-lg shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all";
-        btn.innerHTML = `<i class="fa-solid fa-play"></i><span>${currentLang === 'en' ? 'Start' : (currentLang === 'ko' ? '시작' : '开始分析')}</span>`;
-      }
+      mask.classList.toggle('hidden');
     }
 
     function setBandMode(mode) {
-      bandMode = mode;
-      const btnSim = document.getElementById('btn-mode-sim');
-      const btnBle = document.getElementById('btn-mode-ble');
+      const simBtn = document.getElementById('btn-mode-sim');
+      const bleBtn = document.getElementById('btn-mode-ble');
       if (mode === 'sim') {
-        btnSim.className = "px-2 py-0.5 text-[11px] rounded bg-cyan-600 text-white font-medium shadow-sm";
-        btnBle.className = "px-2 py-0.5 text-[11px] rounded text-gray-600 hover:text-gray-900 font-medium";
+        simBtn.className = "px-2 py-0.5 text-[11px] rounded bg-cyan-600 text-white font-medium";
+        bleBtn.className = "px-2 py-0.5 text-[11px] rounded text-gray-600 hover:text-gray-900 font-medium";
       } else {
-        btnBle.className = "px-2 py-0.5 text-[11px] rounded bg-cyan-600 text-white font-medium shadow-sm";
-        btnSim.className = "px-2 py-0.5 text-[11px] rounded text-gray-600 hover:text-gray-900 font-medium";
+        bleBtn.className = "px-2 py-0.5 text-[11px] rounded bg-cyan-600 text-white font-medium";
+        simBtn.className = "px-2 py-0.5 text-[11px] rounded text-gray-600 hover:text-gray-900 font-medium";
+        connectBLEBand();
       }
     }
 
-    function triggerManualSOS() {
-      addAlarmLog("EMERGENCY SOS TRIGGERED MANUALLY", "danger");
-      playAlarmSound();
+    async function connectBLEBand() {
+      if (!navigator.bluetooth) {
+        alert("WebBluetooth API is not supported on this browser context. Using simulation mode.");
+        return;
+      }
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ services: ['heart_rate'] }]
+        });
+        alert(`Connected to Smart Band: ${device.name}`);
+      } catch (e) {
+        console.log("BLE Bluetooth connection cancelled or failed:", e);
+      }
     }
 
     function connectBluetoothLight() {
-      document.getElementById('txt-bt-light-status').innerText = currentLang === 'en' ? 'Bluetooth Strobe: Connected' : (currentLang === 'ko' ? '블루투스 경광등: 연결됨' : '蓝牙警示灯：已连接 (Connected)');
-      addAlarmLog("Bluetooth Light Beacon Connected successfully", "success");
+      alert("Attempting WebBluetooth GATT pairing with strobe light beacon (UUID: 0xFFE0)...");
+      document.getElementById('txt-bt-light-status').innerText = i18n[currentLang].btLightConnected;
+      document.getElementById('txt-bt-light-status').className = "text-[11px] text-emerald-700 font-bold";
     }
 
-    function testAlarmSystem() {
-      addAlarmLog("Sound & Light Alarm System Self-Test Executed", "warning");
-      playAlarmSound();
+    /* =========================================================================
+       6. CHARTS & NAVIGATION TAB SWITCHING
+       ========================================================================= */
+    let radarChart, crossValChart;
+
+    function switchTab(tab) {
+      const tabs = ['home', 'alarm', 'settings', 'admin'];
+      
+      tabs.forEach(t => {
+        const btn = document.getElementById(`nav-${t}`);
+        const content = document.getElementById(`tab-content-${t}`);
+        
+        if (t === tab) {
+          btn.className = "flex flex-col items-center justify-center gap-1 text-cyan-700 font-bold py-1 px-3 rounded-lg bg-cyan-50 border border-cyan-300 transition-all cursor-pointer select-none";
+          if (content) content.classList.remove('hidden');
+        } else {
+          btn.className = "flex flex-col items-center justify-center gap-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200 active:scale-95 transition-all py-1 px-3 rounded-lg cursor-pointer select-none";
+          if (content) content.classList.add('hidden');
+        }
+      });
     }
 
-    function clearAlarmLog() {
-      alarmLogsCount = 0;
-      document.getElementById('log-count').innerText = "0 events";
-      document.getElementById('alarm-log-container').innerHTML = `<div class="text-gray-400 text-center py-2" id="txt-no-logs">${translations[currentLang].noLogs}</div>`;
-    }
+    function initCharts() {
+      // Light-theme defaults: readable dark-gray text and soft gray grid lines
+      Chart.defaults.color = '#4b5563';
+      Chart.defaults.borderColor = 'rgba(17, 24, 39, 0.10)';
 
-    function addAlarmLog(msg, type = "warning") {
-      alarmLogsCount++;
-      document.getElementById('log-count').innerText = `${alarmLogsCount} events`;
-      const container = document.getElementById('alarm-log-container');
-      if (alarmLogsCount === 1) {
-        container.innerHTML = '';
-      }
-      const timeStr = new Date().toLocaleTimeString();
-      let colorClass = "text-amber-600";
-      if (type === "danger") colorClass = "text-red-600";
-      if (type === "success") colorClass = "text-emerald-600";
-
-      const div = document.createElement('div');
-      div.className = `flex items-center justify-between bg-gray-50 p-1.5 rounded border border-gray-200 ${colorClass}`;
-      div.innerHTML = `<span>[${timeStr}] ${msg}</span><span class="text-[10px] opacity-75">${type.toUpperCase()}</span>`;
-      container.prepend(div);
-    }
-
-    function playAlarmSound() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.3);
-      } catch (e) {
-        console.log("Audio Context not supported or blocked");
-      }
-    }
-
-    // Initialize Charts and MediaPipe Pose with Try-Catch Error Boundary
-    window.addEventListener('DOMContentLoaded', () => {
-      try {
-        // Radar Chart
-        const radarCtx = document.getElementById('radarChart').getContext('2d');
-        new Chart(radarCtx, {
-          type: 'radar',
-          data: {
-            labels: ['心率稳定性', '关节灵活性', '步态平衡', '疲劳指数', '肌肉抗阻', '协调性'],
-            datasets: [{
-              label: 'Current Status',
-              data: [85, 90, 78, 88, 92, 80],
-              backgroundColor: 'rgba(6, 182, 212, 0.15)',
-              borderColor: '#06b6d4',
-              pointBackgroundColor: '#3b82f6',
-              borderWidth: 1.5
-            }]
+      const radarCtx = document.getElementById('radarChart').getContext('2d');
+      radarChart = new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+          labels: ['膝屈曲位', '躯干代偿', '心率负荷', '步态对称', '疲劳指数'],
+          datasets: [{
+            label: '当前风险指标',
+            data: [85, 90, 78, 92, 80],
+            backgroundColor: 'rgba(6, 182, 212, 0.25)',
+            borderColor: '#0891b2',
+            pointBackgroundColor: '#0891b2'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              angleLines: { color: 'rgba(17, 24, 39, 0.15)' },
+              grid: { color: 'rgba(17, 24, 39, 0.15)' },
+              pointLabels: { color: '#4b5563', font: { size: 10 } },
+              ticks: { display: false, backdropColor: 'transparent' }
+            }
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              r: {
-                grid: { color: 'rgba(0, 0, 0, 0.08)' },
-                angleLines: { color: 'rgba(0, 0, 0, 0.08)' },
-                ticks: { display: false, max: 100 },
-                pointLabels: { color: '#374151', font: { size: 10 } }
-              }
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      const crossCtx = document.getElementById('crossValChart').getContext('2d');
+      crossValChart = new Chart(crossCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Fold 1', 'Fold 2', 'Fold 3', 'Fold 4', 'Fold 5'],
+          datasets: [{
+            label: 'Accuracy (%)',
+            data: [98.2, 98.6, 97.9, 99.1, 98.4],
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: '#2563eb',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              min: 90, max: 100,
+              grid: { color: 'rgba(17, 24, 39, 0.10)' },
+              ticks: { color: '#4b5563', font: { size: 10 } }
             },
-            plugins: { legend: { display: false } }
-          }
-        });
-
-        // 5-Fold Cross Validation Chart
-        const crossCtx = document.getElementById('crossValChart').getContext('2d');
-        new Chart(crossCtx, {
-          type: 'bar',
-          data: {
-            labels: ['Fold 1', 'Fold 2', 'Fold 3', 'Fold 4', 'Fold 5'],
-            datasets: [{
-              label: 'Accuracy (%)',
-              data: [98.1, 98.5, 98.2, 98.7, 98.5],
-              backgroundColor: 'rgba(6, 182, 212, 0.4)',
-              borderColor: '#06b6d4',
-              borderWidth: 1,
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                min: 95,
-                max: 100,
-                grid: { color: 'rgba(0, 0, 0, 0.06)' },
-                ticks: { color: '#4b5563', font: { size: 10 } }
-              },
-              x: {
-                grid: { display: false },
-                ticks: { color: '#4b5563', font: { size: 10 } }
-              }
-            },
-            plugins: { legend: { display: false } }
-          }
-        });
-      } catch (e) {
-        console.error("Chart initialization error:", e);
-      }
-
-      // Setup MediaPipe Pose with Try-Catch Error Boundary
-      try {
-        const videoElement = document.getElementById('webcam-video');
-        const poseCanvas = document.getElementById('pose-canvas');
-        const poseCtx = poseCanvas.getContext('2d');
-
-        poseInstance = new Pose({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
-        });
-
-        poseInstance.setOptions({
-          modelComplexity: 1,
-          smoothLandmarks: true,
-          enableSegmentation: false,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5
-        });
-
-        poseInstance.onResults((results) => {
-          try {
-            poseCanvas.width = poseCanvas.clientWidth;
-            poseCanvas.height = poseCanvas.clientHeight;
-
-            poseCtx.save();
-            poseCtx.clearRect(0, 0, poseCanvas.width, poseCanvas.height);
-            
-            if (results.image) {
-              poseCtx.drawImage(results.image, 0, 0, poseCanvas.width, poseCanvas.height);
-            } else {
-              poseCtx.fillStyle = '#111827';
-              poseCtx.fillRect(0, 0, poseCanvas.width, poseCanvas.height);
-            }
-
-            if (results.poseLandmarks) {
-              drawConnectors(poseCtx, results.poseLandmarks, POSE_CONNECTIONS, { color: '#06b6d4', lineWidth: 2 });
-              drawLandmarks(poseCtx, results.poseLandmarks, { color: '#f59e0b', lineWidth: 1, radius: 3 });
-
-              const cfg = jointConfigs[selectedJoint] || jointConfigs['right_knee'];
-              const p1L = results.poseLandmarks[cfg.p1];
-              const vertexL = results.poseLandmarks[cfg.vertex];
-              const p3L = results.poseLandmarks[cfg.p3];
-
-              if (p1L && vertexL && p3L) {
-                const angle = calculateAngle(p1L, vertexL, p3L);
-                document.getElementById('knee-angle-display').innerText = `ANGLE: ${angle}°`;
-                document.getElementById('val-knee-angle').innerText = angle;
-
-                const statusLabel = document.getElementById('knee-status-label');
-                if (angle < cfg.min || angle > cfg.max) {
-                  statusLabel.className = "text-xs text-red-600 font-medium mt-1 animate-pulse";
-                  statusLabel.innerText = `${cfg.nameZh} 超限告警 (${angle}° / Limit: ${cfg.min}-${cfg.max}°)`;
-                  if (Math.random() < 0.1 && isAnalyzing) {
-                    addAlarmLog(`${cfg.nameZh} 角度越限: ${angle}°`, "danger");
-                  }
-                } else {
-                  statusLabel.className = "text-xs text-emerald-600 font-medium mt-1";
-                  statusLabel.innerText = `${cfg.nameZh} 正常曲伸范围 (Normal Motion)`;
-                }
-              }
-            } else {
-              document.getElementById('knee-angle-display').innerText = `ANGLE: 135°`;
-              document.getElementById('val-knee-angle').innerText = 135;
-            }
-
-            poseCtx.restore();
-          } catch (innerErr) {
-            console.error("MediaPipe onResults frame processing error:", innerErr);
-          }
-        });
-
-        cameraInstance = new Camera(videoElement, {
-          onFrame: async () => {
-            try {
-              if (isAnalyzing && videoElement && poseInstance) {
-                await poseInstance.send({ image: videoElement });
-              }
-            } catch (camErr) {
-              console.error("MediaPipe camera frame send error:", camErr);
+            x: {
+              grid: { display: false },
+              ticks: { color: '#4b5563', font: { size: 10 } }
             }
           },
-          width: 640,
-          height: 480
-        });
-        cameraInstance.start().catch(err => {
-          console.warn("Camera start exception caught safely:", err);
-        });
-      } catch (e) {
-        console.warn("MediaPipe initialization skipped or caught safely:", e);
-      }
-    });
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    // ON WINDOW LOAD
+    window.onload = function() {
+      setLanguage('zh');
+      resizeCanvases();
+      initCharts();
+      initMediaPipePose();
+
+      renderSimulatedPose(135);
+      renderKneeVector(135);
+    };
   </script>
 </body>
 </html>
