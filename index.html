@@ -72,6 +72,53 @@
       background: #9ca3af;
     }
   </style>
+  <!-- Skeleton pose side panel: self-contained styles (independent of the light theme) -->
+  <style id="skeleton-panel-style">
+    .skel-row { display: flex; flex-direction: column; gap: 12px; }
+    .skel-panel {
+      display: flex; flex-direction: column;
+      width: 100%; height: 240px;
+      background: #2b2f36; border: 1px solid #3c424c; border-radius: 12px;
+      overflow: hidden; color: #ffffff;
+      -webkit-user-select: none; user-select: none; touch-action: manipulation;
+    }
+    .skel-canvas-wrap { position: relative; flex: 1 1 auto; min-height: 0; }
+    .skel-canvas-wrap canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
+    .skel-info {
+      padding: 6px 12px 8px; border-top: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 13px; font-weight: 600; line-height: 1.55; color: #ffffff;
+      font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+    }
+    .skel-info .skel-key { display: inline-block; min-width: 3.2em; color: #ffffff; }
+    @media (min-width: 640px) {
+      .skel-row { flex-direction: row; align-items: stretch; }
+      .skel-panel { width: 176px; flex: 0 0 176px; height: auto; }
+    }
+  </style>
+  <!-- ================= 新增代码区域 START：REBA 模块 (CSS，独立 reba- 前缀) ================= -->
+  <style id="reba-module-style">
+    .reba-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media (min-width: 768px) { .reba-grid { grid-template-columns: 230px 1fr; } }
+    .reba-figure-box { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .reba-svg { width: 100%; max-width: 190px; height: auto; -webkit-tap-highlight-color: rgba(6, 182, 212, 0.2); }
+    .reba-part { cursor: pointer; outline: none; }
+    .reba-part .shape { fill: #e5e7eb; stroke: #9ca3af; stroke-width: 1.5; transition: fill .15s; }
+    .reba-part .limb { fill: none; stroke: #d1d5db; stroke-linecap: round; stroke-linejoin: round; transition: stroke .15s; }
+    .reba-part:hover .shape, .reba-part:focus-visible .shape { fill: #cffafe; }
+    .reba-part:hover .limb, .reba-part:focus-visible .limb { stroke: #a5f3fc; }
+    .reba-part.is-active .shape { fill: #06b6d4; stroke: #0891b2; }
+    .reba-part.is-active .limb { stroke: #06b6d4; }
+    .reba-head { fill: #f3f4f6; stroke: #9ca3af; stroke-width: 1.5; }
+    .reba-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+    .reba-chip {
+      min-height: 36px; padding: 6px 12px; font-size: 12px; font-weight: 500;
+      color: #4b5563; background: #ffffff; border: 1px solid #d1d5db; border-radius: 8px;
+      transition: all .15s; touch-action: manipulation;
+    }
+    .reba-chip:hover { background: #ecfeff; }
+    .reba-chip.is-active { color: #ffffff; background: #0891b2; border-color: #0891b2; }
+  </style>
+  <!-- ================= 新增代码区域 END：REBA 模块 (CSS) ================= -->
 </head>
 <body class="min-h-screen pb-24 select-none">
 
@@ -134,6 +181,8 @@
             </span>
           </div>
 
+          <!-- Flex row: original video/pose canvas (left) + skeleton panel (right) -->
+          <div class="skel-row">
           <!-- Video Stream Canvas Stack -->
           <div class="relative w-full aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center group">
             
@@ -162,6 +211,18 @@
               <span id="txt-privacy-notice">视频画面与33个关键点数据均在本地浏览器内实时处理，不上传云端，仅输出告警信号。</span>
             </div>
           </div>
+
+          <!-- Skeleton-only panel (new) -->
+          <aside id="skeleton-panel" class="skel-panel" aria-label="Skeleton pose panel">
+            <div class="skel-canvas-wrap">
+              <canvas id="skeletonCanvas"></canvas>
+            </div>
+            <div id="angleInfo" class="skel-info">
+              <div><span class="skel-key">몸통</span><span id="skelTorsoVal">--</span>°</div>
+              <div><span class="skel-key">팔</span><span id="skelArmVal">--</span>°</div>
+            </div>
+          </aside>
+          </div><!-- /skel-row -->
 
           <!-- Controls Bar -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -382,10 +443,23 @@
 
       <!-- Kinematics & Knee Motion Visualization Canvas + Radar Chart (7 Cols) -->
       <div class="lg:col-span-7 glass-panel rounded-2xl p-4 space-y-3">
-        <div class="flex items-center justify-between border-b border-gray-200 pb-2">
-          <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-2">
+          <div class="flex flex-wrap items-center gap-2">
             <i class="fa-solid fa-chart-line text-cyan-700"></i>
-            <h3 id="txt-knee-chart-title" class="font-bold text-gray-900 text-sm">膝关节实时弯曲角度与姿态轨迹可视化</h3>
+            <h3 id="txt-knee-chart-title" class="font-bold text-gray-900 text-sm">关节实时弯曲角度与姿态轨迹可视化</h3>
+            <!-- JOINT SELECTOR (new) -->
+            <select id="joint-select" onchange="handleJointChange()" aria-label="Joint" class="bg-white border border-gray-300 rounded-lg px-2 py-1.5 min-h-[36px] text-xs text-gray-900 focus:outline-none focus:border-cyan-500">
+              <option value="left_knee">左膝关节</option>
+              <option value="right_knee" selected>右膝关节</option>
+              <option value="left_hip">左髋关节</option>
+              <option value="right_hip">右髋关节</option>
+              <option value="left_ankle">左踝关节</option>
+              <option value="right_ankle">右踝关节</option>
+              <option value="left_shoulder">左肩关节</option>
+              <option value="right_shoulder">右肩关节</option>
+              <option value="left_elbow">左肘关节</option>
+              <option value="right_elbow">右肘关节</option>
+            </select>
           </div>
           <span class="text-xs text-cyan-700 font-mono" id="knee-angle-display">ANGLE: 135°</span>
         </div>
@@ -395,6 +469,7 @@
             <span class="absolute top-2 left-2 text-[10px] text-gray-600">2D Joint Skeleton Vector</span>
             <canvas id="knee-canvas" class="w-full h-full max-h-[220px]"></canvas>
             <div id="knee-status-label" class="text-xs text-emerald-700 font-medium mt-1">正常曲伸范围 (Normal Motion)</div>
+            <div id="joint-range-chip" class="text-[10px] text-gray-600 font-mono mt-0.5">告警区间: 75°–180°</div>
           </div>
 
           <div class="bg-white rounded-xl border border-gray-200 p-2 aspect-square flex flex-col items-center justify-center relative">
@@ -551,6 +626,130 @@
         </div>
       </div>
 
+      <!-- ================= 新增代码区域 START：근골격계 参考资料卡片 (HTML) ================= -->
+      <div id="ref-card-msd" class="glass-panel p-5 rounded-2xl space-y-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-book-medical text-cyan-700"></i>
+          <h4 id="ref-card-title" class="font-bold text-gray-900 text-sm">참고 자료</h4>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+          <p id="ref-card-notice" class="text-xs font-semibold text-gray-900 leading-relaxed"></p>
+          <ul class="text-xs text-gray-900 space-y-1">
+            <li class="flex items-start gap-2"><span class="text-cyan-700">•</span><span id="ref-card-b1"></span></li>
+            <li class="flex items-start gap-2"><span class="text-cyan-700">•</span><span id="ref-card-b2"></span></li>
+            <li class="flex items-start gap-2"><span class="text-cyan-700">•</span><span id="ref-card-b3"></span></li>
+          </ul>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
+          <p id="ref-card-edu-title" class="text-xs font-semibold text-cyan-700"></p>
+          <ul class="text-xs text-gray-600 space-y-1">
+            <li class="flex items-start gap-2"><span class="text-gray-600">-</span><span id="ref-card-e1"></span></li>
+            <li class="flex items-start gap-2"><span class="text-gray-600">-</span><span id="ref-card-e2"></span></li>
+          </ul>
+        </div>
+      </div>
+      <!-- ================= 新增代码区域 END：근골격계 参考资料卡片 (HTML) ================= -->
+
+      <!-- ================= 新增代码区域 START：REBA 肌肉骨骼模块 (HTML) ================= -->
+      <div id="reba-module" class="glass-panel p-5 rounded-2xl space-y-4">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-person text-cyan-700"></i>
+          <h4 id="reba-title" class="font-bold text-gray-900 text-sm"></h4>
+        </div>
+        <p id="reba-hint" class="text-xs text-gray-600"></p>
+
+        <div class="reba-grid">
+          <!-- Clickable body diagram + chips -->
+          <div class="reba-figure-box">
+            <svg class="reba-svg" viewBox="0 0 200 350" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Body diagram">
+              <!-- Legs -->
+              <g class="reba-part" data-reba-part="legs" role="button" tabindex="0">
+                <polyline class="limb" points="84,170 80,250 78,328" stroke-width="22"/>
+                <polyline class="limb" points="116,170 120,250 122,328" stroke-width="22"/>
+                <polyline points="84,170 80,250 78,328" fill="none" stroke="rgba(0,0,0,0)" stroke-width="40" pointer-events="stroke"/>
+                <polyline points="116,170 120,250 122,328" fill="none" stroke="rgba(0,0,0,0)" stroke-width="40" pointer-events="stroke"/>
+              </g>
+              <!-- Trunk -->
+              <g class="reba-part" data-reba-part="trunk" role="button" tabindex="0">
+                <rect class="shape" x="68" y="72" width="64" height="104" rx="16"/>
+              </g>
+              <!-- Upper arms -->
+              <g class="reba-part" data-reba-part="upperarm" role="button" tabindex="0">
+                <line class="limb" x1="62" y1="86" x2="40" y2="142" stroke-width="16"/>
+                <line class="limb" x1="138" y1="86" x2="160" y2="142" stroke-width="16"/>
+                <line x1="62" y1="86" x2="40" y2="142" stroke="rgba(0,0,0,0)" stroke-width="34" stroke-linecap="round" pointer-events="stroke"/>
+                <line x1="138" y1="86" x2="160" y2="142" stroke="rgba(0,0,0,0)" stroke-width="34" stroke-linecap="round" pointer-events="stroke"/>
+              </g>
+              <!-- Forearms -->
+              <g class="reba-part" data-reba-part="forearm" role="button" tabindex="0">
+                <line class="limb" x1="40" y1="142" x2="34" y2="198" stroke-width="14"/>
+                <line class="limb" x1="160" y1="142" x2="166" y2="198" stroke-width="14"/>
+                <line x1="40" y1="142" x2="34" y2="198" stroke="rgba(0,0,0,0)" stroke-width="32" stroke-linecap="round" pointer-events="stroke"/>
+                <line x1="160" y1="142" x2="166" y2="198" stroke="rgba(0,0,0,0)" stroke-width="32" stroke-linecap="round" pointer-events="stroke"/>
+              </g>
+              <!-- Wrists -->
+              <g class="reba-part" data-reba-part="wrist" role="button" tabindex="0">
+                <circle class="shape" cx="33" cy="208" r="9"/>
+                <circle class="shape" cx="167" cy="208" r="9"/>
+                <circle cx="33" cy="208" r="20" fill="rgba(0,0,0,0)" pointer-events="all"/>
+                <circle cx="167" cy="208" r="20" fill="rgba(0,0,0,0)" pointer-events="all"/>
+              </g>
+              <!-- Neck -->
+              <g class="reba-part" data-reba-part="neck" role="button" tabindex="0">
+                <rect class="shape" x="91" y="50" width="18" height="24" rx="7"/>
+                <rect x="78" y="46" width="44" height="32" fill="rgba(0,0,0,0)" pointer-events="all"/>
+              </g>
+              <!-- Head (decorative) -->
+              <circle class="reba-head" cx="100" cy="30" r="21"/>
+            </svg>
+            <div class="reba-chips" id="reba-chips">
+              <button type="button" class="reba-chip" data-reba-part="neck"></button>
+              <button type="button" class="reba-chip" data-reba-part="trunk"></button>
+              <button type="button" class="reba-chip" data-reba-part="legs"></button>
+              <button type="button" class="reba-chip" data-reba-part="upperarm"></button>
+              <button type="button" class="reba-chip" data-reba-part="forearm"></button>
+              <button type="button" class="reba-chip" data-reba-part="wrist"></button>
+            </div>
+          </div>
+
+          <!-- Selected part details -->
+          <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 text-xs">
+            <h5 id="reba-part-name" class="text-sm font-bold text-cyan-700"></h5>
+            <div>
+              <p id="reba-h-points" class="font-semibold text-gray-900 mb-1"></p>
+              <ul id="reba-points" class="space-y-1 text-gray-900"></ul>
+            </div>
+            <div>
+              <p id="reba-h-risk" class="font-semibold text-gray-900 mb-1"></p>
+              <p id="reba-risk" class="text-gray-900 leading-relaxed"></p>
+            </div>
+            <div>
+              <p id="reba-h-contra" class="font-semibold text-red-600 mb-1"></p>
+              <ul id="reba-contra" class="space-y-1 text-gray-900"></ul>
+            </div>
+            <p id="reba-disclaimer" class="text-[11px] text-gray-600 pt-1 border-t border-gray-200"></p>
+          </div>
+        </div>
+
+        <!-- REBA introduction + Korean notification reference (bottom) -->
+        <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2 text-xs">
+          <h5 id="reba-intro-title" class="text-sm font-bold text-gray-900"></h5>
+          <p id="reba-intro-sub" class="text-gray-600"></p>
+          <p id="reba-def-h" class="font-semibold text-cyan-700"></p>
+          <p id="reba-def" class="text-gray-900 leading-relaxed"></p>
+          <p id="reba-parts" class="text-gray-900 leading-relaxed"></p>
+          <p id="reba-system" class="text-gray-900 leading-relaxed"></p>
+          <p id="reba-scale" class="text-gray-600 font-mono text-[11px]"></p>
+          <p id="reba-ref-h" class="font-semibold text-cyan-700 pt-1"></p>
+          <ul class="text-gray-600 space-y-1">
+            <li class="flex items-start gap-2"><span>-</span><span id="reba-ref-1"></span></li>
+            <li class="flex items-start gap-2"><span>-</span><span id="reba-ref-2"></span></li>
+            <li class="flex items-start gap-2"><span>-</span><span id="reba-ref-3"></span></li>
+          </ul>
+        </div>
+      </div>
+      <!-- ================= 新增代码区域 END：REBA 肌肉骨骼模块 (HTML) ================= -->
+
     </section>
     </div> <!-- END OF TAB CONTENT HOME -->
 
@@ -598,9 +797,18 @@
             </select>
           </div>
           <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-2">
-            <span class="text-gray-600">膝关节屈曲角告警阈值:</span>
-            <input type="range" min="60" max="90" value="75" class="w-full accent-cyan-500">
-            <p class="text-gray-600 text-[11px]">当前触发门限: <span class="text-cyan-700 font-mono">75°</span></p>
+            <span id="txt-thr-label" class="text-gray-600">右膝关节告警阈值:</span>
+            <div class="flex items-center gap-3">
+              <span id="txt-thr-lower" class="w-16 shrink-0 text-gray-600">告警下限</span>
+              <input id="thr-lower" type="range" min="0" max="180" step="1" value="75" oninput="handleThresholdInput('lo')" class="w-full h-8 accent-cyan-500">
+              <span id="thr-lower-val" class="w-10 shrink-0 text-right text-cyan-700 font-mono">75°</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span id="txt-thr-upper" class="w-16 shrink-0 text-gray-600">告警上限</span>
+              <input id="thr-upper" type="range" min="0" max="180" step="1" value="180" oninput="handleThresholdInput('hi')" class="w-full h-8 accent-cyan-500">
+              <span id="thr-upper-val" class="w-10 shrink-0 text-right text-cyan-700 font-mono">180°</span>
+            </div>
+            <p class="text-gray-600 text-[11px]"><span id="txt-thr-current">当前触发区间:</span> <span id="thr-range-val" class="text-cyan-700 font-mono">75°–180°</span></p>
           </div>
         </div>
       </div>
@@ -760,7 +968,7 @@
         paramTemp: "体温 (Temperature)",
         paramImu: "膝关节角度 (Knee Angle)",
         codeNoteTitle: "硬件对接接口 (Hardware API Hook)",
-        kneeChartTitle: "膝关节实时弯曲角度与姿态轨迹可视化",
+        kneeChartTitle: "关节实时弯曲角度与姿态轨迹可视化",
         arch1Title: "人机双态边缘感知架构",
         arch1Desc: "融合视觉肢体姿态与生理脉搏IMU传感器，实现0延迟端侧推理。视觉数据零落盘、不上云，从源头杜绝隐私风险。",
         arch2Title: "二次损伤主动预警",
@@ -801,7 +1009,23 @@
         navSettings: "设备设置",
         navAdmin: "管理员",
         manualSosLogTag: "【手动SOS紧急报警】",
-        autoAlarmLogTag: "【系统自动异常告警】"
+        autoAlarmLogTag: "【系统自动异常告警】",
+        jointNames: {
+          left_knee: "左膝关节", right_knee: "右膝关节",
+          left_hip: "左髋关节", right_hip: "右髋关节",
+          left_ankle: "左踝关节", right_ankle: "右踝关节",
+          left_shoulder: "左肩关节", right_shoulder: "右肩关节",
+          left_elbow: "左肘关节", right_elbow: "右肘关节"
+        },
+        tagJointOut: "关节角度超限",
+        paramJointAngle: "{joint}角度 (Angle)",
+        statusOut: "警告：{joint}角度超限 (Out of Range)",
+        logOut: "{joint}角度 {angle}° 超出告警阈值 [{lo}°–{hi}°]",
+        rangeChip: "告警区间: {lo}°–{hi}°",
+        thrLabel: "{joint}告警阈值:",
+        thrLower: "告警下限",
+        thrUpper: "告警上限",
+        thrCurrent: "当前触发区间:"
       },
       en: {
         disclaimer: "CES 2028 Exhibition Demonstration Prototype - Not for Clinical Medical Diagnosis",
@@ -849,7 +1073,7 @@
         paramTemp: "Temperature",
         paramImu: "Knee Angle",
         codeNoteTitle: "Hardware API Hook",
-        kneeChartTitle: "Real-time Knee Joint Trajectory & Angle Visualizer",
+        kneeChartTitle: "Real-time Joint Angle & Trajectory Visualizer",
         arch1Title: "Dual-State Edge Sensing Architecture",
         arch1Desc: "Integrates computer vision and wearable sensors for zero-latency edge inference with zero cloud video upload.",
         arch2Title: "Active Injury Prevention",
@@ -890,7 +1114,23 @@
         navSettings: "Device Settings",
         navAdmin: "Admin Console",
         manualSosLogTag: "[MANUAL SOS ALERT]",
-        autoAlarmLogTag: "[AUTO RISK ALARM]"
+        autoAlarmLogTag: "[AUTO RISK ALARM]",
+        jointNames: {
+          left_knee: "Left Knee", right_knee: "Right Knee",
+          left_hip: "Left Hip", right_hip: "Right Hip",
+          left_ankle: "Left Ankle", right_ankle: "Right Ankle",
+          left_shoulder: "Left Shoulder", right_shoulder: "Right Shoulder",
+          left_elbow: "Left Elbow", right_elbow: "Right Elbow"
+        },
+        tagJointOut: "Angle Out of Range",
+        paramJointAngle: "{joint} Angle",
+        statusOut: "Warning: {joint} angle out of range",
+        logOut: "{joint} angle {angle}° outside limits [{lo}°–{hi}°]",
+        rangeChip: "Alarm range: {lo}°–{hi}°",
+        thrLabel: "{joint} alarm thresholds:",
+        thrLower: "Lower limit",
+        thrUpper: "Upper limit",
+        thrCurrent: "Active range:"
       },
       ko: {
         disclaimer: "CES 2028 전시용 시연 프로토타입 - 임상 의료 진단 기기가 아닙니다",
@@ -938,7 +1178,7 @@
         paramTemp: "체온",
         paramImu: "무릎 관절 각도",
         codeNoteTitle: "하드웨어 API 연동 규격",
-        kneeChartTitle: "무릎 관절 궤적 및 각도 시각화",
+        kneeChartTitle: "관절 실시간 각도 및 궤적 시각화",
         arch1Title: "이중 상태 엣지 감지 아키텍처",
         arch1Desc: "컴퓨터 비전과 착용형 센서를 융합하여 데이터 클라우드 전송 없이 엣지에서 즉시 추론합니다.",
         arch2Title: "2차 손상 능동 예방",
@@ -979,7 +1219,23 @@
         navSettings: "설정",
         navAdmin: "관리자",
         manualSosLogTag: "[수동 SOS 긴급 알람]",
-        autoAlarmLogTag: "[자동 위험 경보]"
+        autoAlarmLogTag: "[자동 위험 경보]",
+        jointNames: {
+          left_knee: "왼쪽 무릎 관절", right_knee: "오른쪽 무릎 관절",
+          left_hip: "왼쪽 고관절", right_hip: "오른쪽 고관절",
+          left_ankle: "왼쪽 발목 관절", right_ankle: "오른쪽 발목 관절",
+          left_shoulder: "왼쪽 어깨 관절", right_shoulder: "오른쪽 어깨 관절",
+          left_elbow: "왼쪽 팔꿈치 관절", right_elbow: "오른쪽 팔꿈치 관절"
+        },
+        tagJointOut: "관절 각도 초과",
+        paramJointAngle: "{joint} 각도",
+        statusOut: "경고: {joint} 각도 범위 초과",
+        logOut: "{joint} 각도 {angle}° 경보 범위 [{lo}°–{hi}°] 초과",
+        rangeChip: "경보 범위: {lo}°–{hi}°",
+        thrLabel: "{joint} 경보 임계값:",
+        thrLower: "하한",
+        thrUpper: "상한",
+        thrCurrent: "현재 범위:"
       }
     };
 
@@ -1079,6 +1335,8 @@
       document.getElementById('txt-nav-alarm').innerText = dict.navAlarm;
       document.getElementById('txt-nav-settings').innerText = dict.navSettings;
       document.getElementById('txt-nav-admin').innerText = dict.navAdmin;
+
+      updateJointLabels(); // joint selector / threshold labels follow the language
 
       ['zh', 'en', 'ko'].forEach(l => {
         const btn = document.getElementById(`lang-btn-${l}`);
@@ -1305,36 +1563,23 @@
           });
         }
 
-        // Calculate Knee Flexion Angle (Hip -> Knee -> Ankle)
-        // Right Leg: Hip 24, Knee 26, Ankle 28
-        const hip = results.poseLandmarks[24];
-        const knee = results.poseLandmarks[26];
-        const ankle = results.poseLandmarks[28];
+        // Selected-joint angle from the 33 landmarks (see JOINT_DEFS).
+        // Previously fixed to the right knee: Hip 24, Knee 26, Ankle 28.
+        const jointAngle = computeJointAngle(results.poseLandmarks, currentJoint);
 
-        if (hip && knee && ankle) {
-          const kneeAngle = Math.round(calculateAngle(hip, knee, ankle));
-          document.getElementById('val-knee-angle').innerText = kneeAngle;
-          document.getElementById('knee-angle-display').innerText = `ANGLE: ${kneeAngle}°`;
-          
-          renderKneeVector(kneeAngle);
+        if (jointAngle !== null) {
+          showJointAngle(jointAngle);
+          renderKneeVector(jointAngle);
 
-          // Injury Risk Assessment
-          if (kneeAngle < 75) {
-            document.getElementById('tag-hyperflexion').className = CLS_TAG_DANGER;
-            document.getElementById('knee-status-label').innerText = "警告：膝关节过度屈曲 (Hyperflexion Warning)";
-            document.getElementById('knee-status-label').className = CLS_KNEE_BAD;
-            setRiskLevel(3);
-            playAlarmSound('warn');
-          } else {
-            document.getElementById('tag-hyperflexion').className = CLS_TAG_IDLE;
-            document.getElementById('knee-status-label').innerText = "正常曲伸范围 (Normal Motion)";
-            document.getElementById('knee-status-label').className = CLS_KNEE_OK;
-            setRiskLevel(1);
-          }
+          // Injury Risk Assessment against THIS joint's lower/upper limits
+          handleJointAlarm(jointAngle, { setRisk: true });
         }
       }
 
       poseCtx.restore();
+
+      // Skeleton side panel (additive): draws skeleton only + torso/arm angles
+      if (typeof drawSkeletonOnly === 'function') drawSkeletonOnly(results.poseLandmarks, typeof skeletonAspectOf === 'function' ? skeletonAspectOf(results) : 1);
     }
 
     // Compute angle between three points (A: Hip, B: Knee Pivot, C: Ankle)
@@ -1345,6 +1590,149 @@
         angle = 360.0 - angle;
       }
       return angle;
+    }
+
+    /* =========================================================================
+       5b. JOINT SELECTOR: per-joint landmarks, thresholds & alarm handling
+       MediaPipe Pose 33-point indices used here:
+         11/12 shoulder L/R | 13/14 elbow L/R | 15/16 wrist L/R
+         23/24 hip L/R | 25/26 knee L/R | 27/28 ankle L/R | 31/32 foot index L/R
+       pts = [A, B(vertex), C] -> calculateAngle(A, B, C) is the angle at B.
+       rest = idle display angle, sim = [center, amplitude] for simulated mode,
+       lo/hi = default alarm limits (demo values, not clinical).
+       ========================================================================= */
+    const JOINT_DEFS = {
+      left_knee:      { type: 'knee',     pts: [23, 25, 27], rest: 135, sim: [115, 45], lo: 75, hi: 180 },
+      right_knee:     { type: 'knee',     pts: [24, 26, 28], rest: 135, sim: [115, 45], lo: 75, hi: 180 },
+      left_hip:       { type: 'hip',      pts: [11, 23, 25], rest: 150, sim: [105, 50], lo: 60, hi: 180 },
+      right_hip:      { type: 'hip',      pts: [12, 24, 26], rest: 150, sim: [105, 50], lo: 60, hi: 180 },
+      left_ankle:     { type: 'ankle',    pts: [25, 27, 31], rest: 100, sim: [100, 50], lo: 60, hi: 150 },
+      right_ankle:    { type: 'ankle',    pts: [26, 28, 32], rest: 100, sim: [100, 50], lo: 60, hi: 150 },
+      left_shoulder:  { type: 'shoulder', pts: [23, 11, 13], rest: 30,  sim: [90, 90],  lo: 0,  hi: 170 },
+      right_shoulder: { type: 'shoulder', pts: [24, 12, 14], rest: 30,  sim: [90, 90],  lo: 0,  hi: 170 },
+      left_elbow:     { type: 'elbow',    pts: [11, 13, 15], rest: 150, sim: [100, 80], lo: 30, hi: 180 },
+      right_elbow:    { type: 'elbow',    pts: [12, 14, 16], rest: 150, sim: [100, 80], lo: 30, hi: 180 }
+    };
+
+    let currentJoint = 'right_knee'; // original fixed joint was the right knee (24/26/28)
+    const jointThresholds = {};      // editable per-joint limits, seeded from defaults
+    Object.keys(JOINT_DEFS).forEach(k => { jointThresholds[k] = { lo: JOINT_DEFS[k].lo, hi: JOINT_DEFS[k].hi }; });
+    const lastJointAlarmAt = {};     // per-joint cooldown so logs/sound are not spammed every frame
+    const JOINT_ALARM_COOLDOWN_MS = 2000;
+    const MIN_LANDMARK_VISIBILITY = 0.4;
+
+    function getJointName(key) {
+      return i18n[currentLang].jointNames[key || currentJoint];
+    }
+
+    function isOutOfRange(angle) {
+      const t = jointThresholds[currentJoint];
+      return angle < t.lo || angle > t.hi;
+    }
+
+    // Angle of the selected joint from the 33 MediaPipe landmarks (null if not reliably visible)
+    function computeJointAngle(landmarks, key) {
+      const def = JOINT_DEFS[key || currentJoint];
+      const pts = def.pts.map(i => landmarks[i]);
+      if (pts.some(p => !p)) return null;
+      if (pts.some(p => p.visibility !== undefined && p.visibility < MIN_LANDMARK_VISIBILITY)) return null;
+      return Math.round(calculateAngle(pts[0], pts[1], pts[2]));
+    }
+
+    function showJointAngle(angle) {
+      document.getElementById('val-knee-angle').innerText = angle;
+      document.getElementById('knee-angle-display').innerText = `ANGLE: ${angle}°`;
+    }
+
+    // Applies the selected joint's lower/upper limits: tag, status label, (optional) risk level, log + sound
+    function handleJointAlarm(angle, opts = {}) {
+      const setRisk = !!opts.setRisk;
+      const silent = !!opts.silent;
+      const dict = i18n[currentLang];
+      const t = jointThresholds[currentJoint];
+      const tag = document.getElementById('tag-hyperflexion');
+      const label = document.getElementById('knee-status-label');
+
+      if (isOutOfRange(angle)) {
+        const kneeTooBent = JOINT_DEFS[currentJoint].type === 'knee' && angle < t.lo;
+        tag.className = CLS_TAG_DANGER;
+        label.innerText = kneeTooBent
+          ? "警告：膝关节过度屈曲 (Hyperflexion Warning)"
+          : dict.statusOut.replace('{joint}', getJointName());
+        label.className = CLS_KNEE_BAD;
+        if (setRisk) setRiskLevel(3);
+
+        if (!silent) {
+          const now = Date.now();
+          if (now - (lastJointAlarmAt[currentJoint] || 0) > JOINT_ALARM_COOLDOWN_MS) {
+            lastJointAlarmAt[currentJoint] = now;
+            addAlarmLog('AUTO', dict.logOut
+              .replace('{joint}', getJointName())
+              .replace('{angle}', angle)
+              .replace('{lo}', t.lo)
+              .replace('{hi}', t.hi));
+            playAlarmSound('warn');
+          }
+        }
+      } else {
+        tag.className = CLS_TAG_IDLE;
+        label.innerText = "正常曲伸范围 (Normal Motion)";
+        label.className = CLS_KNEE_OK;
+        if (setRisk) setRiskLevel(1);
+      }
+    }
+
+    // Dropdown change: switch the measured joint
+    function handleJointChange() {
+      currentJoint = document.getElementById('joint-select').value;
+      updateJointLabels();
+      const rest = JOINT_DEFS[currentJoint].rest;
+      handleJointAlarm(rest, { silent: true }); // reset indicators without logging
+      if (isAnalyzing) {
+        showJointAngle('--'); // next frame provides the new joint's angle
+      } else {
+        showJointAngle(rest);
+        renderKneeVector(rest);
+      }
+    }
+
+    // Threshold sliders (Settings tab) edit the CURRENT joint's limits
+    function handleThresholdInput(which) {
+      const t = jointThresholds[currentJoint];
+      let lo = parseInt(document.getElementById('thr-lower').value, 10);
+      let hi = parseInt(document.getElementById('thr-upper').value, 10);
+      if (which === 'lo' && lo > hi) hi = lo;
+      if (which === 'hi' && hi < lo) lo = hi;
+      t.lo = lo;
+      t.hi = hi;
+      syncThresholdUI();
+    }
+
+    function syncThresholdUI() {
+      const dict = i18n[currentLang];
+      const t = jointThresholds[currentJoint];
+      document.getElementById('txt-thr-label').innerText = dict.thrLabel.replace('{joint}', getJointName());
+      document.getElementById('txt-thr-lower').innerText = dict.thrLower;
+      document.getElementById('txt-thr-upper').innerText = dict.thrUpper;
+      document.getElementById('txt-thr-current').innerText = dict.thrCurrent;
+      document.getElementById('thr-lower').value = t.lo;
+      document.getElementById('thr-upper').value = t.hi;
+      document.getElementById('thr-lower-val').innerText = `${t.lo}°`;
+      document.getElementById('thr-upper-val').innerText = `${t.hi}°`;
+      document.getElementById('thr-range-val').innerText = `${t.lo}°–${t.hi}°`;
+      document.getElementById('joint-range-chip').innerText = dict.rangeChip.replace('{lo}', t.lo).replace('{hi}', t.hi);
+    }
+
+    // Refresh every label that depends on the selected joint / language
+    function updateJointLabels() {
+      const dict = i18n[currentLang];
+      const sel = document.getElementById('joint-select');
+      Array.from(sel.options).forEach(o => { o.text = dict.jointNames[o.value]; });
+      sel.value = currentJoint;
+      document.getElementById('txt-param-imu').innerText = dict.paramJointAngle.replace('{joint}', getJointName());
+      document.getElementById('tag-hyperflexion').innerText =
+        JOINT_DEFS[currentJoint].type === 'knee' ? dict.tagHyperflexion : dict.tagJointOut;
+      syncThresholdUI();
     }
 
     /* Video Input Selection Handler */
@@ -1483,9 +1871,9 @@
         if (!isAnalyzing || currentSourceMode !== 'sim') return;
         
         simAnglePhase += 0.04;
-        const kneeAngle = Math.round(115 + Math.sin(simAnglePhase) * 45);
-        document.getElementById('val-knee-angle').innerText = kneeAngle;
-        document.getElementById('knee-angle-display').innerText = `ANGLE: ${kneeAngle}°`;
+        const simDef = JOINT_DEFS[currentJoint].sim; // [center, amplitude] of the selected joint
+        const kneeAngle = Math.max(0, Math.min(180, Math.round(simDef[0] + Math.sin(simAnglePhase) * simDef[1])));
+        showJointAngle(kneeAngle);
 
         if (Math.random() > 0.8) {
           const hr = 75 + Math.floor(Math.sin(simAnglePhase * 2) * 15);
@@ -1499,19 +1887,11 @@
           }
         }
 
-        if (kneeAngle < 75) {
-          document.getElementById('tag-hyperflexion').className = CLS_TAG_DANGER;
-          document.getElementById('knee-status-label').innerText = "警告：膝关节过度屈曲 (Hyperflexion Warning)";
-          document.getElementById('knee-status-label').className = CLS_KNEE_BAD;
-          playAlarmSound('warn');
-        } else {
-          document.getElementById('tag-hyperflexion').className = CLS_TAG_IDLE;
-          document.getElementById('knee-status-label').innerText = "正常曲伸范围 (Normal Motion)";
-          document.getElementById('knee-status-label').className = CLS_KNEE_OK;
-        }
+        handleJointAlarm(kneeAngle);
 
         renderSimulatedPose(kneeAngle);
         renderKneeVector(kneeAngle);
+        if (typeof drawSkeletonSim === 'function') drawSkeletonSim(simAnglePhase);
 
         animFrameId = requestAnimationFrame(loop);
       }
@@ -1557,7 +1937,7 @@
       poseCtx.beginPath(); poseCtx.arc(cx, headY - 20, 16, 0, Math.PI * 2); poseCtx.stroke();
       poseCtx.beginPath(); poseCtx.moveTo(cx, headY); poseCtx.lineTo(cx, hipY); poseCtx.stroke();
 
-      poseCtx.strokeStyle = kneeAngle < 75 ? '#ef4444' : '#10b981';
+      poseCtx.strokeStyle = isOutOfRange(kneeAngle) ? '#ef4444' : '#10b981';
       poseCtx.beginPath(); poseCtx.moveTo(cx, hipY); poseCtx.lineTo(kneeX, kneeY); poseCtx.lineTo(ankleX, ankleY); poseCtx.stroke();
 
       const joints = [
@@ -1590,8 +1970,14 @@
       kneeCtx.beginPath(); kneeCtx.moveTo(cx, cy); kneeCtx.lineTo(x1, y1); kneeCtx.stroke();
       kneeCtx.beginPath(); kneeCtx.moveTo(cx, cy); kneeCtx.lineTo(x2, y2); kneeCtx.stroke();
 
-      kneeCtx.fillStyle = angle < 75 ? '#ef4444' : '#10b981';
+      kneeCtx.fillStyle = isOutOfRange(angle) ? '#ef4444' : '#10b981';
       kneeCtx.beginPath(); kneeCtx.arc(cx, cy, 7, 0, Math.PI * 2); kneeCtx.fill();
+
+      // Selected joint name at the bottom of the canvas
+      kneeCtx.fillStyle = '#4b5563';
+      kneeCtx.font = '12px Inter, system-ui, sans-serif';
+      kneeCtx.textAlign = 'center';
+      kneeCtx.fillText(getJointName(), cx, h - 8);
     }
 
     function toggleScreenMask() {
@@ -1732,5 +2118,473 @@
       renderKneeVector(135);
     };
   </script>
+  <!-- SKELETON SIDE PANEL (additive module, independent from the main script) -->
+  <script id="skeleton-panel-script">
+  (function () {
+    const canvas = document.getElementById('skeletonCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const torsoEl = document.getElementById('skelTorsoVal');
+    const armEl = document.getElementById('skelArmVal');
+
+    const COL_BONE = '#86efac';   // light green bones
+    const COL_JOINT = '#ffffff';  // white joints
+    const MIN_VIS = 0.3;
+    const PAD = 16;
+    // Body connections by MediaPipe Pose index (shoulders, arms, torso, legs, feet)
+    const BONES = [
+      [11, 12], [11, 13], [13, 15], [12, 14], [14, 16],
+      [11, 23], [12, 24], [23, 24],
+      [23, 25], [25, 27], [24, 26], [26, 28],
+      [27, 31], [28, 32]
+    ];
+    const JOINTS = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28, 31, 32];
+
+    let cssW = 0, cssH = 0;
+    let last = { lm: null, aspect: 1 };
+
+    function sizeCanvas() {
+      const r = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      cssW = Math.max(1, Math.round(r.width));
+      cssH = Math.max(1, Math.round(r.height));
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      render(last.lm, last.aspect);
+    }
+
+    function ok(p) {
+      return !!p && (p.visibility === undefined || p.visibility >= MIN_VIS);
+    }
+
+    // Angle (deg) at b formed by a-b-c, points already in a distortion-free space
+    function angleAt(a, b, c) {
+      const rad = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+      let deg = Math.abs(rad * 180 / Math.PI);
+      if (deg > 180) deg = 360 - deg;
+      return deg;
+    }
+
+    // 몸통: trunk (mid-hip -> mid-shoulder) tilt from vertical, 0 = upright
+    // 팔: elbow angle (shoulder-elbow-wrist) of the more clearly visible arm
+    function computeBodyAngles(lm, aspect) {
+      const P = (i) => {
+        const p = lm[i];
+        return ok(p) ? { x: p.x * aspect, y: p.y, v: (p.visibility === undefined ? 1 : p.visibility) } : null;
+      };
+      let torso = null, arm = null;
+
+      const ls = P(11), rs = P(12), lh = P(23), rh = P(24);
+      if (ls && rs && lh && rh) {
+        const dx = (ls.x + rs.x) / 2 - (lh.x + rh.x) / 2;
+        const dy = (ls.y + rs.y) / 2 - (lh.y + rh.y) / 2;
+        torso = Math.abs(Math.atan2(dx, -dy)) * 180 / Math.PI;
+      }
+
+      let best = -1;
+      [[12, 14, 16], [11, 13, 15]].forEach(t => {
+        const a = P(t[0]), b = P(t[1]), c = P(t[2]);
+        if (a && b && c) {
+          const score = (a.v + b.v + c.v) / 3;
+          if (score > best) { best = score; arm = angleAt(a, b, c); }
+        }
+      });
+      return { torso, arm };
+    }
+
+    function setAngleText(torso, arm) {
+      torsoEl.textContent = torso === null ? '--' : String(Math.round(torso));
+      armEl.textContent = arm === null ? '--' : String(Math.round(arm));
+    }
+
+    function render(lm, aspect) {
+      ctx.clearRect(0, 0, cssW, cssH);   // skeleton only: no video frame is ever drawn here
+
+      if (!lm) {
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.font = '12px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('대기 중', cssW / 2, cssH / 2);
+        setAngleText(null, null);
+        return;
+      }
+
+      // Fit the visible body into the panel, keeping the true aspect ratio
+      const idx = [0].concat(JOINTS);
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity, n = 0;
+      idx.forEach(i => {
+        const p = lm[i];
+        if (!ok(p)) return;
+        const x = p.x * aspect, y = p.y;
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+        n++;
+      });
+      if (n < 2) { setAngleText(null, null); return; }
+
+      const bw = Math.max(maxX - minX, 0.05), bh = Math.max(maxY - minY, 0.05);
+      const s = Math.min((cssW - PAD * 2) / bw, (cssH - PAD * 2) / bh);
+      const offX = (cssW - bw * s) / 2, offY = (cssH - bh * s) / 2;
+      const X = (p) => (p.x * aspect - minX) * s + offX;
+      const Y = (p) => (p.y - minY) * s + offY;
+
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = COL_BONE;
+      ctx.lineWidth = 3;
+
+      BONES.forEach(b => {
+        const p = lm[b[0]], q = lm[b[1]];
+        if (!ok(p) || !ok(q)) return;
+        ctx.beginPath(); ctx.moveTo(X(p), Y(p)); ctx.lineTo(X(q), Y(q)); ctx.stroke();
+      });
+
+      // Neck line + head
+      const nose = lm[0], ls = lm[11], rs = lm[12];
+      if (ok(nose) && ok(ls) && ok(rs)) {
+        const mx = (X(ls) + X(rs)) / 2, my = (Y(ls) + Y(rs)) / 2;
+        ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(X(nose), Y(nose)); ctx.stroke();
+      }
+
+      ctx.fillStyle = COL_JOINT;
+      JOINTS.forEach(i => {
+        const p = lm[i];
+        if (!ok(p)) return;
+        ctx.beginPath(); ctx.arc(X(p), Y(p), 4, 0, Math.PI * 2); ctx.fill();
+      });
+      if (ok(nose)) {
+        ctx.beginPath(); ctx.arc(X(nose), Y(nose), 5.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      const a = computeBodyAngles(lm, aspect);
+      setAngleText(a.torso, a.arm);
+    }
+
+    // Public: draw MediaPipe landmarks on the side panel only
+    window.drawSkeletonOnly = function (landmarks, aspect) {
+      last = { lm: landmarks || null, aspect: aspect || 1 };
+      render(last.lm, last.aspect);
+    };
+
+    // Frame aspect ratio (width / height) so angles are not skewed by normalized coordinates
+    window.skeletonAspectOf = function (results) {
+      const img = results && results.image;
+      const w = img && (img.videoWidth || img.width);
+      const h = img && (img.videoHeight || img.height);
+      return (w && h) ? w / h : 1;
+    };
+
+    // Simulated mode: synthetic landmarks so the panel is alive in the demo without a camera
+    window.drawSkeletonSim = function (phase) {
+      const lean = Math.sin(phase * 0.7) * 12 * Math.PI / 180;
+      const pivot = { x: 0.5, y: 0.55 };
+      const rot = (p) => {
+        const dx = p.x - pivot.x, dy = p.y - pivot.y;
+        return { x: pivot.x + dx * Math.cos(lean) - dy * Math.sin(lean),
+                 y: pivot.y + dx * Math.sin(lean) + dy * Math.cos(lean) };
+      };
+      const lm = new Array(33).fill(null);
+      const put = (i, p) => { lm[i] = { x: p.x, y: p.y, visibility: 1 }; };
+
+      put(0, rot({ x: 0.5, y: 0.13 }));
+      put(11, rot({ x: 0.42, y: 0.27 }));
+      put(12, rot({ x: 0.58, y: 0.27 }));
+      put(13, rot({ x: 0.38, y: 0.41 }));
+      put(15, rot({ x: 0.38, y: 0.54 }));
+      const rElbow = rot({ x: 0.62, y: 0.41 });
+      put(14, rElbow);
+      const rSh = lm[12];
+      const ux = rSh.x - rElbow.x, uy = rSh.y - rElbow.y, ul = Math.hypot(ux, uy);
+      const flex = (115 + Math.sin(phase * 1.3) * 45) * Math.PI / 180;
+      const nx = ux / ul, ny = uy / ul;
+      put(16, { x: rElbow.x + (nx * Math.cos(flex) - ny * Math.sin(flex)) * 0.13,
+                y: rElbow.y + (nx * Math.sin(flex) + ny * Math.cos(flex)) * 0.13 });
+      put(23, { x: 0.45, y: 0.55 }); put(24, { x: 0.55, y: 0.55 });
+      put(25, { x: 0.45, y: 0.73 }); put(26, { x: 0.55, y: 0.73 });
+      put(27, { x: 0.45, y: 0.91 }); put(28, { x: 0.55, y: 0.91 });
+      put(31, { x: 0.42, y: 0.95 }); put(32, { x: 0.58, y: 0.95 });
+
+      window.drawSkeletonOnly(lm, 1);
+    };
+
+    window.addEventListener('resize', sizeCanvas);
+    if (window.ResizeObserver) new ResizeObserver(sizeCanvas).observe(canvas.parentElement);
+    window.addEventListener('load', sizeCanvas);
+    sizeCanvas();
+  })();
+  </script>
+  <!-- ================= 新增代码区域 START：근골격계 参考资料卡片 (三语 + 语言联动) ================= -->
+  <script id="ref-card-script">
+  (function () {
+    const REF_CARD_I18N = {
+      zh: {
+        title: "参考资料",
+        notice: "关于肌肉骨骼负担作业范围及有害因素调查方法的告示（第2020-12号）",
+        bullets: ["11项", "2小时标准", "每3年开展一次有害因素调查"],
+        eduTitle: "参考教育资料",
+        edu: ["肌肉骨骼疾病预防教育资料(2022)", "肌肉骨骼疾病预防教育资料(2021)"]
+      },
+      en: {
+        title: "Reference Materials",
+        notice: "Notification on the scope of musculoskeletal burden work and the hazard factor investigation method (No.2020-12)",
+        bullets: ["11 items", "2-hour standard", "Hazard factor investigation every 3 years"],
+        eduTitle: "Reference training materials",
+        edu: ["Musculoskeletal disorder prevention training materials (2022)", "Musculoskeletal disorder prevention training materials (2021)"]
+      },
+      ko: {
+        title: "참고 자료",
+        notice: "근골격계부담작업의 범위 및 유해요인조사 방법에 관한 고시 (제2020-12호)",
+        bullets: ["11개 항목", "2시간 기준", "3년 주기 유해요인조사"],
+        eduTitle: "참고 교육자료",
+        edu: ["근골격계질환 예방 교육자료(2022)", "근골격계질환 예방 교육자료(2021)"]
+      }
+    };
+
+    function updateRefCard(lang) {
+      const d = REF_CARD_I18N[lang] || REF_CARD_I18N.zh;
+      const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+      set('ref-card-title', d.title);
+      set('ref-card-notice', d.notice);
+      d.bullets.forEach((t, i) => set('ref-card-b' + (i + 1), t));
+      set('ref-card-edu-title', d.eduTitle);
+      d.edu.forEach((t, i) => set('ref-card-e' + (i + 1), t));
+    }
+
+    // Follow the page's existing language switch without editing it:
+    // wrap the global setLanguage() so the card updates right after the original runs.
+    if (typeof window.setLanguage === 'function') {
+      const originalSetLanguage = window.setLanguage;
+      window.setLanguage = function (lang) {
+        const result = originalSetLanguage.apply(this, arguments);
+        updateRefCard(lang);
+        return result;
+      };
+    }
+
+    // Initial render (page default language; falls back to zh)
+    updateRefCard(typeof currentLang !== 'undefined' ? currentLang : 'zh');
+  })();
+  </script>
+  <!-- ================= 新增代码区域 END：근골격계 参考资料卡片 (三语 + 语言联动) ================= -->
+  <!-- ================= 新增代码区域 START：REBA 模块 (JS：三语文案 + 交互 + 语言联动) ================= -->
+  <script id="reba-module-script">
+  (function () {
+    const I18N = {
+      zh: {
+        title: "肌肉骨骼系统 & REBA评估",
+        hint: "点击人体示意图上的部位，查看评估要点、负荷风险与康复禁忌",
+        hPoints: "REBA评估要点", hRisk: "负荷风险", hContra: "康复禁忌",
+        disclaimer: "仅供演示参考，具体训练请遵医嘱或治疗师指导。",
+        parts: {
+          neck: { name: "颈部",
+            points: ["颈部前屈0–20°计1分；前屈>20°或后伸计2分", "颈部扭转或侧弯再加1分"],
+            risk: "长时间低头或颈部前屈超过20°，会增加颈椎及颈肩肌群负荷，容易引发疲劳性劳损。",
+            contra: ["避免持续低头和颈部过度后伸", "出现头晕或上肢放射痛、麻木时应立即停止训练"] },
+          trunk: { name: "躯干",
+            points: ["直立计1分；前屈或后伸0–20°计2分", "前屈20–60°或后伸>20°计3分；前屈>60°计4分", "扭转或侧弯再加1分"],
+            risk: "躯干大幅前屈并负重，会显著增加腰椎间盘与腰背肌负荷，是二次损伤的高风险姿势。",
+            contra: ["避免负重状态下深度前屈或扭转", "腰部术后或急性腰痛期，应遵医嘱限制屈伸幅度"] },
+          legs: { name: "下肢",
+            points: ["双腿均衡承重、行走或坐姿计1分", "单腿承重或姿势不稳计2分", "膝屈曲30–60°加1分；>60°（非坐姿）加2分"],
+            risk: "单腿承重和深屈膝会增加膝关节及髌股关节负荷，术后康复期尤其需要注意。",
+            contra: ["前交叉韧带(ACL)重建或全膝关节置换术后，避免超出医嘱的深屈膝与负重深蹲", "获得许可前，避免单腿不稳定承重训练"] },
+          upperarm: { name: "上臂",
+            points: ["上臂在-20°至20°之间计1分", "后伸>20°或前屈20–45°计2分", "前屈45–90°计3分；>90°计4分", "肩部抬高或外展加1分；手臂有支撑或借助重力减1分"],
+            risk: "上臂长时间上举会压迫肩峰下结构，并增加肩袖负荷。",
+            contra: ["肩袖损伤或肩关节术后，避免超出医嘱的主动上举和肩上负重"] },
+          forearm: { name: "前臂",
+            points: ["肘屈曲60–100°计1分", "屈曲<60°或>100°计2分"],
+            risk: "肘关节极端屈伸或负重，会增加肱二头肌及肘部结构的负荷。",
+            contra: ["肘部骨折或术后，避免超出许可范围的末端屈伸与负重"] },
+          wrist: { name: "手腕",
+            points: ["腕屈伸0–15°计1分", "腕屈伸>15°计2分", "桡偏、尺偏或扭转再加1分"],
+            risk: "手腕偏离中立位并反复用力，容易增加腕管与腱鞘负荷。",
+            contra: ["腕部损伤或腕管症状期，避免重复性大幅屈伸与偏转用力；出现麻木刺痛时应停止"] }
+        },
+        introTitle: "REBA（快速全身姿势评估法）",
+        introSub: "",
+        defH: "定义",
+        def: "REBA是人体工效学评估工具，通过分析康复训练者全身姿势，评估肌肉骨骼疾患以及二次损伤风险。",
+        partsLine: "评估部位：颈部、躯干、下肢、上臂、前臂、手腕",
+        system: "本系统结合REBA评估逻辑与《肌肉骨骼负担作业范围及有害因素调查方法告示（第2020-12号）》标准，实现康复训练二次损伤预警。",
+        scale: "REBA总分：1 可忽略｜2–3 低｜4–7 中｜8–10 高｜11–15 极高",
+        refH: "参考资料",
+        refs: ["肌肉骨骼疾病预防教育资料（2022）", "肌肉骨骼疾病预防教育资料（2021）", "关于肌肉骨骼负担作业范围及有害因素调查方法的告示（第2020-12号）"]
+      },
+      en: {
+        title: "Musculoskeletal System & REBA Assessment",
+        hint: "Tap a body part on the diagram to view assessment points, load risk and rehab contraindications",
+        hPoints: "REBA Assessment Points", hRisk: "Load Risk", hContra: "Rehab Contraindications",
+        disclaimer: "For demonstration only. Follow your clinician's or therapist's guidance for actual training.",
+        parts: {
+          neck: { name: "Neck",
+            points: ["Neck flexion 0–20° scores 1; flexion >20° or extension scores 2", "Add 1 if the neck is twisted or side-bent"],
+            risk: "Keeping the head down or neck flexion beyond 20° raises the load on the cervical spine and neck-shoulder muscles and can cause fatigue-related strain.",
+            contra: ["Avoid sustained head-down posture and excessive neck extension", "Stop training immediately if dizziness or radiating arm pain/numbness appears"] },
+          trunk: { name: "Trunk",
+            points: ["Upright scores 1; flexion or extension 0–20° scores 2", "Flexion 20–60° or extension >20° scores 3; flexion >60° scores 4", "Add 1 for twisting or side-bending"],
+            risk: "Deep trunk flexion while carrying a load greatly increases lumbar disc and back muscle load, a high-risk posture for secondary injury.",
+            contra: ["Avoid deep bending or twisting while loaded", "After lumbar surgery or during acute low back pain, limit the flexion/extension range as instructed by your clinician"] },
+          legs: { name: "Legs",
+            points: ["Weight borne evenly on both legs, walking or sitting scores 1", "Single-leg support or unstable posture scores 2", "Knee flexion 30–60° adds 1; >60° (not sitting) adds 2"],
+            risk: "Single-leg support and deep knee flexion increase the load on the knee and patellofemoral joints, which needs special attention during post-surgery rehabilitation.",
+            contra: ["After ACL reconstruction or total knee replacement, avoid deep knee flexion and loaded deep squats beyond the prescribed range", "Avoid unstable single-leg loading drills until cleared"] },
+          upperarm: { name: "Upper Arm",
+            points: ["Upper arm between -20° and 20° scores 1", "Extension >20° or flexion 20–45° scores 2", "Flexion 45–90° scores 3; >90° scores 4", "Add 1 for raised or abducted shoulder; subtract 1 if the arm is supported or gravity-assisted"],
+            risk: "Holding the arm elevated for long periods compresses subacromial structures and increases rotator cuff load.",
+            contra: ["After rotator cuff injury or shoulder surgery, avoid active elevation and overhead loading beyond the prescribed range"] },
+          forearm: { name: "Lower Arm",
+            points: ["Elbow flexion 60–100° scores 1", "Flexion <60° or >100° scores 2"],
+            risk: "Extreme elbow flexion/extension or loading increases the load on the biceps and elbow structures.",
+            contra: ["After elbow fracture or surgery, avoid end-range flexion/extension and loading beyond the permitted range"] },
+          wrist: { name: "Wrist",
+            points: ["Wrist flexion/extension 0–15° scores 1", "Flexion/extension >15° scores 2", "Add 1 for radial/ulnar deviation or twisting"],
+            risk: "Repeated force with the wrist away from neutral can increase load on the carpal tunnel and tendon sheaths.",
+            contra: ["With wrist injury or carpal tunnel symptoms, avoid repetitive large flexion/extension and deviated force; stop if numbness or tingling occurs"] }
+        },
+        introTitle: "REBA (Rapid Entire Body Assessment)",
+        introSub: "",
+        defH: "Definition",
+        def: "REBA is an ergonomic assessment tool to analyze full-body posture and evaluate the risk of musculoskeletal disorders and secondary injury during rehabilitation training.",
+        partsLine: "Assessment parts: Neck, Trunk, Legs, Upper Arm, Lower Arm, Wrist",
+        system: "This system combines REBA rules and Notification No.2020-12 to warn secondary injury risks in rehabilitation training.",
+        scale: "REBA final score: 1 negligible | 2–3 low | 4–7 medium | 8–10 high | 11–15 very high",
+        refH: "Reference materials",
+        refs: ["Musculoskeletal disorder prevention training materials (2022)", "Musculoskeletal disorder prevention training materials (2021)", "Notification on the scope of musculoskeletal burden work and the hazard factor investigation method (No.2020-12)"]
+      },
+      ko: {
+        title: "근골격계 & REBA 평가",
+        hint: "인체 도식의 부위를 눌러 평가 요점, 부하 위험, 재활 금기를 확인하세요",
+        hPoints: "REBA 평가 요점", hRisk: "부하 위험", hContra: "재활 금기",
+        disclaimer: "시연용 참고 자료입니다. 실제 훈련은 의료진 또는 치료사의 지시를 따르세요.",
+        parts: {
+          neck: { name: "목",
+            points: ["목 굴곡 0–20° = 1점, 굴곡 20° 초과 또는 신전 = 2점", "목이 비틀리거나 옆으로 굽으면 +1점"],
+            risk: "고개를 오래 숙이거나 굴곡이 20°를 넘으면 경추와 목·어깨 근육의 부담이 커져 피로성 손상이 생기기 쉽습니다.",
+            contra: ["지속적인 고개 숙임과 과도한 목 신전을 피합니다", "어지럼증이나 팔 방사통·저림이 나타나면 즉시 훈련을 중단합니다"] },
+          trunk: { name: "몸통",
+            points: ["똑바로 선 자세 = 1점, 굴곡·신전 0–20° = 2점", "굴곡 20–60° 또는 신전 20° 초과 = 3점, 굴곡 60° 초과 = 4점", "비틀림·옆굽힘 시 +1점"],
+            risk: "몸통을 크게 숙인 채 하중을 들면 요추 추간판과 허리 근육의 부담이 크게 늘어 이차손상 위험이 높은 자세입니다.",
+            contra: ["하중을 든 채 깊게 숙이거나 비트는 동작을 피합니다", "허리 수술 후나 급성 요통기에는 의료진 지시에 따라 굴곡·신전 범위를 제한합니다"] },
+          legs: { name: "다리",
+            points: ["양다리에 균등하게 체중 지지·보행·앉은 자세 = 1점", "한쪽 다리 체중 지지 또는 불안정한 자세 = 2점", "무릎 굴곡 30–60° = +1점, 60° 초과(앉은 자세 제외) = +2점"],
+            risk: "한쪽 다리 지지와 깊은 무릎 굴곡은 무릎 관절과 슬개대퇴 관절의 부담을 키우며, 수술 후 재활기에는 특히 주의가 필요합니다.",
+            contra: ["전방십자인대(ACL) 재건술이나 인공 무릎관절 치환술 후에는 처방 범위를 넘는 깊은 굴곡과 하중 스쿼트를 피합니다", "허가받기 전에는 한쪽 다리 불안정 지지 훈련을 피합니다"] },
+          upperarm: { name: "위팔",
+            points: ["위팔 −20°~20° = 1점", "신전 20° 초과 또는 굴곡 20–45° = 2점", "굴곡 45–90° = 3점, 90° 초과 = 4점", "어깨 올림·외전 시 +1점, 팔 지지·중력 보조 시 −1점"],
+            risk: "팔을 오래 들어 올리면 견봉하 구조물이 눌리고 회전근개의 부담이 커집니다.",
+            contra: ["회전근개 손상이나 어깨 수술 후에는 처방 범위를 넘는 능동 거상과 어깨 위 하중을 피합니다"] },
+          forearm: { name: "아래팔",
+            points: ["팔꿈치 굴곡 60–100° = 1점", "굴곡 60° 미만 또는 100° 초과 = 2점"],
+            risk: "팔꿈치를 극단적으로 굽히거나 펴고 하중을 들면 상완이두근과 팔꿈치 구조물의 부담이 커집니다.",
+            contra: ["팔꿈치 골절이나 수술 후에는 허용 범위를 넘는 끝범위 굴곡·신전과 하중을 피합니다"] },
+          wrist: { name: "손목",
+            points: ["손목 굴곡·신전 0–15° = 1점", "굴곡·신전 15° 초과 = 2점", "요측·척측 편위 또는 비틀림 시 +1점"],
+            risk: "손목이 중립에서 벗어난 채 반복해서 힘을 쓰면 수근관과 건초의 부담이 커질 수 있습니다.",
+            contra: ["손목 부상이나 수근관 증상이 있을 때는 반복적인 큰 굴곡·신전과 편위 동작을 피하고, 저림·찌릿함이 있으면 중단합니다"] }
+        },
+        introTitle: "REBA (Rapid Entire Body Assessment)",
+        introSub: "신속 전신 작업 자세 평가",
+        defH: "정의",
+        def: "REBA는 작업자/재활 훈련자의 전신 자세를 분석하여 근골격계 질환 및 이차손상 위험도를 평가하는 인간공학적 평가 도구입니다.",
+        partsLine: "평가 부위: 목, 몸통, 다리, 위팔, 아래팔, 손목",
+        system: "본 시스템은 REBA 평가 로직과 「근골격계부담작업의 범위 및 유해요인조사 방법에 관한 고시(제2020-12호)」 기준을 결합하여 재활 훈련 중 이차손상을 예보합니다.",
+        scale: "REBA 최종 점수: 1 무시 가능 | 2–3 낮음 | 4–7 중간 | 8–10 높음 | 11–15 매우 높음",
+        refH: "참고 자료",
+        refs: ["근골격계질환 예방 교육자료(2022)", "근골격계질환 예방 교육자료(2021)", "근골격계부담작업의 범위 및 유해요인조사 방법에 관한 고시 (제2020-12호)"]
+      }
+    };
+
+    let selectedPart = 'neck';
+
+    const $ = (id) => document.getElementById(id);
+    function activeLang(lang) {
+      if (lang && I18N[lang]) return lang;
+      return (typeof currentLang !== 'undefined' && I18N[currentLang]) ? currentLang : 'zh';
+    }
+    function fillList(ul, items) {
+      ul.innerHTML = '';
+      items.forEach(t => {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-2';
+        const dot = document.createElement('span');
+        dot.className = 'text-cyan-700';
+        dot.textContent = '•';
+        const txt = document.createElement('span');
+        txt.textContent = t;
+        li.appendChild(dot);
+        li.appendChild(txt);
+        ul.appendChild(li);
+      });
+    }
+
+    function render(lang) {
+      const d = I18N[activeLang(lang)];
+      const part = d.parts[selectedPart];
+
+      $('reba-title').textContent = d.title;
+      $('reba-hint').textContent = d.hint;
+      $('reba-part-name').textContent = part.name;
+      $('reba-h-points').textContent = d.hPoints;
+      $('reba-h-risk').textContent = d.hRisk;
+      $('reba-h-contra').textContent = d.hContra;
+      fillList($('reba-points'), part.points);
+      $('reba-risk').textContent = part.risk;
+      fillList($('reba-contra'), part.contra);
+      $('reba-disclaimer').textContent = d.disclaimer;
+
+      $('reba-intro-title').textContent = d.introTitle;
+      const sub = $('reba-intro-sub');
+      sub.textContent = d.introSub;
+      sub.style.display = d.introSub ? '' : 'none';
+      $('reba-def-h').textContent = d.defH;
+      $('reba-def').textContent = d.def;
+      $('reba-parts').textContent = d.partsLine;
+      $('reba-system').textContent = d.system;
+      $('reba-scale').textContent = d.scale;
+      $('reba-ref-h').textContent = d.refH;
+      d.refs.forEach((t, i) => { $('reba-ref-' + (i + 1)).textContent = t; });
+
+      document.querySelectorAll('[data-reba-part]').forEach(el => {
+        const key = el.getAttribute('data-reba-part');
+        const active = key === selectedPart;
+        el.classList.toggle('is-active', active);
+        el.setAttribute('aria-label', d.parts[key].name);
+        if (el.tagName && el.tagName.toLowerCase() === 'button') {
+          el.textContent = d.parts[key].name;
+          el.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
+      });
+    }
+
+    function selectPart(key) {
+      selectedPart = key;
+      render();
+    }
+
+    document.querySelectorAll('[data-reba-part]').forEach(el => {
+      const key = el.getAttribute('data-reba-part');
+      el.addEventListener('click', () => selectPart(key));
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectPart(key); }
+      });
+    });
+
+    // Follow the page's existing language switch without editing it:
+    // wrap the global setLanguage() so this module re-renders right after the original runs.
+    if (typeof window.setLanguage === 'function') {
+      const prevSetLanguage = window.setLanguage;
+      window.setLanguage = function (lang) {
+        const result = prevSetLanguage.apply(this, arguments);
+        render(lang);
+        return result;
+      };
+    }
+
+    render();
+  })();
+  </script>
+  <!-- ================= 新增代码区域 END：REBA 模块 (JS) ================= -->
 </body>
 </html>
