@@ -119,6 +119,32 @@
     .reba-chip.is-active { color: #ffffff; background: #0891b2; border-color: #0891b2; }
   </style>
   <!-- ================= 新增代码区域 END：REBA 模块 (CSS) ================= -->
+  <!-- ================= 新增代码区域 START：监测数据流模块 (CSS，独立 mon- 前缀) ================= -->
+  <style id="mon-module-style">
+    @keyframes mon-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+    @keyframes mon-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+    .mon-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 9999px;
+      font-size: 11px; font-weight: 600; color: #4b5563; background: #ffffff; border: 1px solid #d1d5db; }
+    .mon-pill .mon-dot { width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; }
+    .mon-pill.is-live { color: #047857; background: #ecfdf5; border-color: #6ee7b7; }
+    .mon-pill.is-live .mon-dot { background: #10b981; animation: mon-pulse 1.4s infinite; }
+    .mon-alert-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .mon-alert { background: #ffffff; border: 1.5px solid #fca5a5; border-radius: 12px; padding: 10px 12px; animation: mon-in .25s ease-out; }
+    .mon-alert.l2 { border-color: #fcd34d; }
+    .mon-alert-head { font-size: 12px; font-weight: 700; color: #b91c1c; line-height: 1.5; }
+    .mon-alert.l2 .mon-alert-head { color: #b45309; }
+    .mon-alert-body { font-size: 12px; color: #111827; margin-top: 2px; }
+    .mon-alert-time { font-size: 10px; color: #4b5563; margin-top: 2px; font-family: ui-monospace, monospace; }
+    .mon-empty { font-size: 12px; color: #4b5563; text-align: center; padding: 8px 0; }
+    .mon-status { background: #ffffff; border: 1.5px solid #6ee7b7; border-radius: 12px; padding: 12px 14px; transition: border-color .2s; }
+    .mon-status.l2 { border-color: #fcd34d; }
+    .mon-status.l3 { border-color: #fca5a5; }
+    .mon-status.idle { border-color: #d1d5db; }
+    .mon-cloud-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #9ca3af; margin-right: 6px; }
+    .mon-cloud-dot.on { background: #10b981; }
+    .mon-cloud-dot.sync { background: #f59e0b; animation: mon-pulse 1s infinite; }
+  </style>
+  <!-- ================= 新增代码区域 END：监测数据流模块 (CSS) ================= -->
 </head>
 <body class="min-h-screen pb-24 select-none">
 
@@ -367,6 +393,39 @@
           </div>
 
         </div>
+
+      <!-- ================= 新增代码区域 START：庆云大学监测数据流模块 (HTML，右侧栏末尾) ================= -->
+      <div id="mon-module" class="space-y-3">
+        <div class="flex items-center gap-2 px-1">
+          <i class="fa-solid fa-tower-broadcast text-cyan-700"></i>
+          <h3 id="mon-title" class="font-bold text-gray-900 text-sm"></h3>
+        </div>
+
+        <!-- 실시간 수신 / Realtime Reception / 实时接收 -->
+        <div class="glass-panel rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <h4 id="mon-recv-title" class="font-bold text-gray-900 text-xs tracking-wide"></h4>
+            <span id="mon-pill" class="mon-pill"><span class="mon-dot"></span><span id="mon-pill-text"></span></span>
+          </div>
+          <p id="mon-caption" class="text-[11px] text-gray-600"></p>
+          <div id="mon-alert-list" class="mon-alert-list"></div>
+        </div>
+
+        <!-- 수신 상태 / Reception Status / 接收状态 -->
+        <div id="mon-status-card" class="mon-status idle">
+          <h4 id="mon-status-title" class="font-bold text-gray-900 text-xs tracking-wide"></h4>
+          <p id="mon-trainees" class="text-sm font-semibold text-gray-900 mt-1"></p>
+          <p id="mon-reba-line" class="text-[11px] text-gray-600 mt-1"></p>
+        </div>
+
+        <!-- 경운대 클라우드 / Gyeongun University Cloud / 庆云大学云端 -->
+        <div class="glass-panel rounded-2xl p-4 space-y-1">
+          <h4 id="mon-cloud-title" class="font-bold text-gray-900 text-xs tracking-wide"></h4>
+          <p id="mon-cloud-desc" class="text-xs text-gray-900"></p>
+          <p class="text-[11px] text-gray-600"><span id="mon-cloud-dot" class="mon-cloud-dot"></span><span id="mon-cloud-status"></span></p>
+        </div>
+      </div>
+      <!-- ================= 新增代码区域 END：庆云大学监测数据流模块 (HTML) ================= -->
 
       </div>
 
@@ -2586,5 +2645,394 @@
   })();
   </script>
   <!-- ================= 新增代码区域 END：REBA 模块 (JS) ================= -->
+  <!-- ================= 新增代码区域 START：庆云大学监测数据流模块 (JS) ================= -->
+  <script id="mon-module-script">
+  (function () {
+    /* ---------- Tunables ---------- */
+    const REBA_ALERT_MEDIUM = 4;     // REBA >= 4  -> L2 alert card
+    const REBA_ALERT_HIGH = 8;       // REBA >= 8  -> L3 alert card
+    const STALE_MS = 1500;           // no frame for this long -> "waiting"
+    const PERSON_HOLD_MS = 800;      // keep "1 person" briefly to avoid flicker
+    const CLOUD_SYNC_MS = 5000;      // simulated cloud sync interval
+    const MAX_ALERTS = 30;
+
+    /* ---------- Trilingual text ---------- */
+    const I18N = {
+      zh: {
+        title: "庆云大学 · 训练监测数据流",
+        recv: "实时接收",
+        caption: "#编号：姿态异常 / 角度超限，风险等级",
+        pillLive: "接收中 · {fps} fps", pillWait: "等待数据",
+        empty: "暂无告警",
+        status: "接收状态",
+        trainees: "当前训练人数：{n}人 | 风险等级：{lvl}",
+        rebaLine: "REBA估算 {score}（{level}）｜已接收 {frames} 帧",
+        rebaNone: "REBA估算 --｜已接收 {frames} 帧",
+        cloud: "庆云大学云端",
+        cloudDesc: "姿态数据与训练人数记录同步至云端",
+        cloudSyncing: "同步中…",
+        cloudDone: "已同步 {time} · 记录 {n} 条（模拟，未真实上传）",
+        cloudIdle: "待机：开始分析后同步（模拟，不会真实上传）",
+        typeAngle: "角度超限", typePosture: "姿态异常",
+        riskWord: "风险等级", colon: "：", comma: "，",
+        angleBody: "{joint} {angle}°（允许 {lo}°–{hi}°）",
+        rebaBody: "REBA {score}（{level}）",
+        rebaLevels: ["可忽略", "低", "中", "高", "极高"],
+        none: "—"
+      },
+      en: {
+        title: "Gyeongun University · Training Monitoring Stream",
+        recv: "Realtime Reception",
+        caption: "#No. : Posture Abnormality / Angle Overlimit, Risk Level",
+        pillLive: "Receiving · {fps} fps", pillWait: "Waiting for data",
+        empty: "No alerts",
+        status: "Reception Status",
+        trainees: "Current trainees: {n} | Risk Level: {lvl}",
+        rebaLine: "REBA estimate {score} ({level}) | Frames received {frames}",
+        rebaNone: "REBA estimate -- | Frames received {frames}",
+        cloud: "Gyeongun University Cloud",
+        cloudDesc: "Posture data and trainee count synchronized to cloud",
+        cloudSyncing: "Syncing…",
+        cloudDone: "Synced {time} · {n} records (simulated, nothing is uploaded)",
+        cloudIdle: "Standby: syncs once analysis starts (simulated, nothing is uploaded)",
+        typeAngle: "Angle Overlimit", typePosture: "Posture Abnormality",
+        riskWord: "Risk Level", colon: " : ", comma: ", ",
+        angleBody: "{joint} {angle}° (allowed {lo}°–{hi}°)",
+        rebaBody: "REBA {score} ({level})",
+        rebaLevels: ["Negligible", "Low", "Medium", "High", "Very high"],
+        none: "—"
+      },
+      ko: {
+        title: "경운대 · 훈련 모니터링 데이터 스트림",
+        recv: "실시간 수신",
+        caption: "#번호 : 자세 이상 / 각도 초과, 위험등급",
+        pillLive: "수신 중 · {fps} fps", pillWait: "데이터 대기 중",
+        empty: "경보 없음",
+        status: "수신 상태",
+        trainees: "현재 훈련 인원: {n}명 | 위험단계: {lvl}",
+        rebaLine: "REBA 추정 {score} ({level}) | 수신 프레임 {frames}",
+        rebaNone: "REBA 추정 -- | 수신 프레임 {frames}",
+        cloud: "경운대 클라우드",
+        cloudDesc: "자세 데이터 및 훈련 인원 기록 클라우드 동기화",
+        cloudSyncing: "동기화 중…",
+        cloudDone: "동기화 완료 {time} · 기록 {n}건 (시뮬레이션, 실제 업로드 없음)",
+        cloudIdle: "대기 중: 분석 시작 시 동기화 (시뮬레이션, 실제 업로드 없음)",
+        typeAngle: "각도 초과", typePosture: "자세 이상",
+        riskWord: "위험등급", colon: " : ", comma: ", ",
+        angleBody: "{joint} {angle}° (허용 {lo}°–{hi}°)",
+        rebaBody: "REBA {score} ({level})",
+        rebaLevels: ["무시 가능", "낮음", "중간", "높음", "매우 높음"],
+        none: "—"
+      }
+    };
+
+    /* ---------- REBA lookup tables (standard REBA worksheet; simplified use below) ---------- */
+    const TABLE_A = [ // [trunk 1-5][neck 1-3][legs 1-4]
+      [[1,2,3,4],[1,2,3,4],[3,3,5,6]],
+      [[2,3,4,5],[3,4,5,6],[4,5,6,7]],
+      [[2,4,5,6],[4,5,6,7],[5,6,7,8]],
+      [[3,5,6,7],[5,6,7,8],[6,7,8,9]],
+      [[4,6,7,8],[6,7,8,9],[7,8,9,9]]
+    ];
+    const TABLE_B = [ // [upper arm 1-6][lower arm 1-2][wrist 1-3]
+      [[1,2,2],[1,2,3]],
+      [[1,2,3],[2,3,4]],
+      [[3,4,5],[4,5,5]],
+      [[4,5,5],[5,6,7]],
+      [[6,7,8],[7,8,8]],
+      [[7,8,8],[8,9,9]]
+    ];
+    const TABLE_C = [ // [score A 1-12][score B 1-12]
+      [1,1,1,2,3,3,4,5,6,7,7,7],
+      [1,2,2,3,4,4,5,6,6,7,7,8],
+      [2,3,3,3,4,5,6,7,7,8,8,8],
+      [3,4,4,4,5,6,7,8,8,9,9,9],
+      [4,4,4,5,6,7,8,8,9,9,9,9],
+      [6,6,6,7,8,8,9,9,10,10,10,10],
+      [7,7,7,8,9,9,9,10,10,11,11,11],
+      [8,8,8,9,10,10,10,10,10,11,11,11],
+      [9,9,9,10,10,10,11,11,11,12,12,12],
+      [10,10,10,11,11,11,11,12,12,12,12,12],
+      [11,11,11,11,12,12,12,12,12,12,12,12],
+      [12,12,12,12,12,12,12,12,12,12,12,12]
+    ];
+
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    const vecAngle = (u, v) => {
+      const d = Math.hypot(u.x, u.y) * Math.hypot(v.x, v.y);
+      if (!d) return 0;
+      return Math.acos(clamp((u.x * v.x + u.y * v.y) / d, -1, 1)) * 180 / Math.PI;
+    };
+    const angleAt = (a, b, c) => vecAngle({ x: a.x - b.x, y: a.y - b.y }, { x: c.x - b.x, y: c.y - b.y });
+
+    // Simplified REBA estimate from MediaPipe landmarks (2D, aspect-corrected).
+    // Not included: load/force, coupling, activity scores, twist/side-bend, shoulder raise. Demo only.
+    function computeREBA(lm, aspect) {
+      const P = (i) => {
+        const p = lm[i];
+        if (!p || (p.visibility !== undefined && p.visibility < 0.4)) return null;
+        return { x: p.x * aspect, y: p.y, v: p.visibility === undefined ? 1 : p.visibility };
+      };
+      const ls = P(11), rs = P(12), lh = P(23), rh = P(24);
+      if (!(ls && rs && lh && rh)) return null;
+      const sm = mid(ls, rs), hm = mid(lh, rh);
+      const trunkVec = { x: sm.x - hm.x, y: sm.y - hm.y };
+
+      // Trunk: tilt from vertical
+      const trunkDeg = Math.abs(Math.atan2(trunkVec.x, -trunkVec.y)) * 180 / Math.PI;
+      const trunk = trunkDeg <= 5 ? 1 : trunkDeg <= 20 ? 2 : trunkDeg <= 60 ? 3 : 4;
+
+      // Neck: deviation of shoulder-mid -> ear(s) from the trunk axis
+      let neck = 1;
+      const le = P(7), re = P(8);
+      if (le || re) {
+        const e = (le && re) ? mid(le, re) : (le || re);
+        neck = vecAngle({ x: e.x - sm.x, y: e.y - sm.y }, trunkVec) <= 20 ? 1 : 2;
+      }
+
+      // Legs: base 1 (2 if one foot clearly raised) + knee flexion bonus
+      let legs = 1;
+      const lk = P(25), rk = P(26), la = P(27), ra = P(28);
+      if (la && ra) {
+        const legLen = (Math.hypot(la.x - lh.x, la.y - lh.y) + Math.hypot(ra.x - rh.x, ra.y - rh.y)) / 2;
+        if (Math.abs(la.y - ra.y) > 0.25 * legLen) legs = 2;
+      }
+      let maxFlex = 0;
+      [[lh, lk, la], [rh, rk, ra]].forEach(t => {
+        if (t[0] && t[1] && t[2]) maxFlex = Math.max(maxFlex, 180 - angleAt(t[0], t[1], t[2]));
+      });
+      if (maxFlex > 60) legs += 2; else if (maxFlex >= 30) legs += 1;
+      legs = Math.min(legs, 4);
+
+      // Arms: evaluate both sides, keep the higher Score B
+      let scoreB = 1;
+      [[12, 14, 16, 20], [11, 13, 15, 19]].forEach(ids => {
+        const sh = P(ids[0]), el = P(ids[1]), wr = P(ids[2]), ix = P(ids[3]);
+        if (!(sh && el)) return;
+        const hp = ids[0] === 12 ? rh : lh;
+        const uaFlex = angleAt(hp, sh, el);   // 0 = arm hanging along the trunk, 180 = overhead
+        const ua = uaFlex <= 20 ? 1 : uaFlex <= 45 ? 2 : uaFlex <= 90 ? 3 : 4;
+        let lower = 1, wrist = 1;
+        if (wr) {
+          const elFlex = 180 - angleAt(sh, el, wr);
+          lower = (elFlex >= 60 && elFlex <= 100) ? 1 : 2;
+          if (ix && ix.v >= 0.6 && wr.v >= 0.6) {
+            wrist = (180 - angleAt(el, wr, ix)) <= 15 ? 1 : 2;
+          }
+        }
+        scoreB = Math.max(scoreB, TABLE_B[ua - 1][lower - 1][wrist - 1]);
+      });
+
+      const scoreA = TABLE_A[trunk - 1][neck - 1][legs - 1];
+      const score = TABLE_C[clamp(scoreA, 1, 12) - 1][clamp(scoreB, 1, 12) - 1];
+      const idx = score <= 1 ? 0 : score <= 3 ? 1 : score <= 7 ? 2 : score <= 10 ? 3 : 4;
+      return { score, idx, trunk, neck, legs, scoreA, scoreB };
+    }
+    window.computeREBAFromLandmarks = computeREBA;   // exposed for debugging / reuse
+
+    /* ---------- State ---------- */
+    const S = {
+      alerts: [], nextId: 1,
+      frames: 0, fpsCount: 0, fps: 0,
+      lastFeedTs: 0, lastPersonTs: 0,
+      reba: null, rebaTier: 0, rebaCardTs: 0,
+      jointOutUntil: 0, lastAngleCard: {},
+      cloudRecords: 0, cloudLastSync: '', cloudSyncing: false,
+      lastRender: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const fmt = (str, vars) => str.replace(/\{(\w+)\}/g, (m, k) => (vars[k] !== undefined ? vars[k] : m));
+    function lang() { return (typeof currentLang !== 'undefined' && I18N[currentLang]) ? currentLang : 'zh'; }
+    function pageRiskText(level) {   // reuse the page's own L1/L2/L3 names
+      try { return 'L' + level + ' ' + i18n[lang()]['riskL' + level]; } catch (e) { return 'L' + level; }
+    }
+    function jointName(key) {
+      try { return i18n[lang()].jointNames[key] || key; } catch (e) { return key; }
+    }
+
+    /* ---------- Data feed ---------- */
+    function hasPerson(lm) {
+      if (!lm) return false;
+      let ok = 0;
+      [0, 11, 12, 23, 24].forEach(i => {
+        const p = lm[i];
+        if (p && (p.visibility === undefined || p.visibility >= 0.5)) ok++;
+      });
+      return ok >= 3;
+    }
+
+    function feed(lm, aspect) {
+      const now = Date.now();
+      S.lastFeedTs = now; S.frames++; S.fpsCount++;
+      if (hasPerson(lm)) {
+        S.lastPersonTs = now;
+        S.reba = computeREBA(lm, aspect || 1);
+        if (S.reba) handleRebaAlert(S.reba, now);
+      } else if (now - S.lastPersonTs > PERSON_HOLD_MS) {
+        S.reba = null; S.rebaTier = 0;
+      }
+      if (now - S.lastRender > 250) render();
+    }
+
+    function handleRebaAlert(r, now) {
+      const tier = r.score >= REBA_ALERT_HIGH ? 3 : (r.score >= REBA_ALERT_MEDIUM ? 2 : 0);
+      if (tier > 0 && (tier > S.rebaTier || now - S.rebaCardTs > 10000)) {
+        S.rebaCardTs = now;
+        addAlert({ type: 'posture', level: tier, score: r.score, idx: r.idx });
+      }
+      S.rebaTier = tier;
+    }
+
+    function onJointCheck(angle, opts) {
+      if (opts && opts.silent) return;
+      if (typeof isOutOfRange !== 'function' || !isOutOfRange(angle)) return;
+      const now = Date.now();
+      S.jointOutUntil = now + 3000;
+      const key = currentJoint;
+      if (now - (S.lastAngleCard[key] || 0) > 5000) {
+        S.lastAngleCard[key] = now;
+        const t = jointThresholds[key];
+        addAlert({ type: 'angle', level: 3, joint: key, angle: angle, lo: t.lo, hi: t.hi });
+      }
+    }
+
+    function addAlert(a) {
+      a.id = S.nextId++;
+      a.time = new Date().toLocaleTimeString();
+      S.alerts.unshift(a);
+      if (S.alerts.length > MAX_ALERTS) S.alerts.length = MAX_ALERTS;
+      render();
+    }
+
+    /* ---------- Rendering ---------- */
+    function overallLevel(now) {
+      let lvl = 1;
+      if (S.reba && S.reba.idx === 2) lvl = 2;
+      if ((S.reba && S.reba.idx >= 3) || now < S.jointOutUntil) lvl = 3;
+      return lvl;
+    }
+
+    function renderAlerts(T) {
+      const list = $('mon-alert-list');
+      list.innerHTML = '';
+      if (!S.alerts.length) {
+        const e = document.createElement('div');
+        e.className = 'mon-empty';
+        e.textContent = T.empty;
+        list.appendChild(e);
+        return;
+      }
+      S.alerts.forEach(a => {
+        const card = document.createElement('div');
+        card.className = 'mon-alert' + (a.level === 2 ? ' l2' : '');
+        const head = document.createElement('div');
+        head.className = 'mon-alert-head';
+        const typeLabel = a.type === 'angle' ? T.typeAngle : T.typePosture;
+        head.textContent = '#' + a.id + T.colon + typeLabel + T.comma + T.riskWord + ' ' + pageRiskText(a.level);
+        const body = document.createElement('div');
+        body.className = 'mon-alert-body';
+        body.textContent = a.type === 'angle'
+          ? fmt(T.angleBody, { joint: jointName(a.joint), angle: a.angle, lo: a.lo, hi: a.hi })
+          : fmt(T.rebaBody, { score: a.score, level: T.rebaLevels[a.idx] });
+        const time = document.createElement('div');
+        time.className = 'mon-alert-time';
+        time.textContent = a.time;
+        card.appendChild(head); card.appendChild(body); card.appendChild(time);
+        list.appendChild(card);
+      });
+    }
+
+    function render() {
+      const now = Date.now();
+      S.lastRender = now;
+      const T = I18N[lang()];
+      const live = (now - S.lastFeedTs) < STALE_MS;
+      const count = (live && (now - S.lastPersonTs) < PERSON_HOLD_MS) ? 1 : 0;
+
+      $('mon-title').textContent = T.title;
+      $('mon-recv-title').textContent = T.recv;
+      $('mon-caption').textContent = T.caption;
+      const pill = $('mon-pill');
+      pill.className = 'mon-pill' + (live ? ' is-live' : '');
+      $('mon-pill-text').textContent = live ? fmt(T.pillLive, { fps: S.fps }) : T.pillWait;
+      renderAlerts(T);
+
+      // Reception status: trainee count + risk level
+      const lvl = overallLevel(now);
+      const card = $('mon-status-card');
+      card.className = 'mon-status ' + (count === 0 ? 'idle' : 'l' + lvl);
+      $('mon-status-title').textContent = T.status;
+      $('mon-trainees').textContent = fmt(T.trainees, { n: count, lvl: count === 0 ? T.none : pageRiskText(lvl) });
+      $('mon-reba-line').textContent = (S.reba && count)
+        ? fmt(T.rebaLine, { score: S.reba.score, level: T.rebaLevels[S.reba.idx], frames: S.frames })
+        : fmt(T.rebaNone, { frames: S.frames });
+
+      // Simulated cloud
+      $('mon-cloud-title').textContent = T.cloud;
+      $('mon-cloud-desc').textContent = T.cloudDesc;
+      const dot = $('mon-cloud-dot');
+      let cloudText;
+      if (!live) { cloudText = T.cloudIdle; dot.className = 'mon-cloud-dot'; }
+      else if (S.cloudSyncing || !S.cloudLastSync) { cloudText = T.cloudSyncing; dot.className = 'mon-cloud-dot sync'; }
+      else { cloudText = fmt(T.cloudDone, { time: S.cloudLastSync, n: S.cloudRecords }); dot.className = 'mon-cloud-dot on'; }
+      $('mon-cloud-status').textContent = cloudText;
+    }
+
+    /* ---------- Timers ---------- */
+    setInterval(() => { S.fps = S.fpsCount; S.fpsCount = 0; render(); }, 1000);
+    setInterval(() => {
+      if ((Date.now() - S.lastFeedTs) >= STALE_MS) return;      // only while receiving
+      S.cloudSyncing = true; render();
+      setTimeout(() => {
+        S.cloudSyncing = false; S.cloudRecords++;
+        S.cloudLastSync = new Date().toLocaleTimeString();
+        render();
+      }, 700);
+    }, CLOUD_SYNC_MS);
+
+    /* ---------- Hooks (wrap existing functions, originals stay untouched) ---------- */
+    // 1) pose frames: the skeleton panel's draw call receives MediaPipe landmarks (real and simulated)
+    if (typeof window.drawSkeletonOnly === 'function') {
+      const prevDraw = window.drawSkeletonOnly;
+      window.drawSkeletonOnly = function (lm, aspect) {
+        const r = prevDraw.apply(this, arguments);
+        try { feed(lm, aspect); } catch (e) { console.warn('monitor feed error', e); }
+        return r;
+      };
+    } else if (typeof window.onPoseResults === 'function') {
+      // fallback when the skeleton panel is absent: wrap the MediaPipe callback (registered on load)
+      const prevResults = window.onPoseResults;
+      window.onPoseResults = function (results) {
+        const r = prevResults.apply(this, arguments);
+        try { if (typeof isAnalyzing !== 'undefined' && isAnalyzing) feed(results && results.poseLandmarks, 1); } catch (e) {}
+        return r;
+      };
+    }
+    // 2) joint angle overlimit
+    if (typeof window.handleJointAlarm === 'function') {
+      const prevAlarm = window.handleJointAlarm;
+      window.handleJointAlarm = function (angle, opts) {
+        const r = prevAlarm.apply(this, arguments);
+        try { onJointCheck(angle, opts); } catch (e) { console.warn('monitor alert error', e); }
+        return r;
+      };
+    }
+    // 3) language switch
+    if (typeof window.setLanguage === 'function') {
+      const prevLang = window.setLanguage;
+      window.setLanguage = function () {
+        const r = prevLang.apply(this, arguments);
+        render();
+        return r;
+      };
+    }
+
+    render();
+  })();
+  </script>
+  <!-- ================= 新增代码区域 END：庆云大学监测数据流模块 (JS) ================= -->
 </body>
 </html>
+'
