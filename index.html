@@ -3025,5 +3025,383 @@
   })();
   </script>
   <!-- ================= 新增代码区域 END：庆云大学监测数据流模块 (JS) ================= -->
+  <!-- Safety pre-check + fall detection + 119 module -->
+  <script id="safety-precheck-script">
+/* Safety pre-check v2: gear status cards + gear alert + fall detection + Korean 119 flow.
+   Runs fully in the browser on MediaPipe Pose landmarks; wraps existing functions, originals stay untouched. */
+(function () {
+  const FALL_COUNTDOWN_S = 5, EMERGENCY_NUMBER = '119', DEMO_NO_DIAL_DEFAULT = false;
+  const GEAR_LOST_ALERT_MS = 3000, GEAR_ALERT_COOLDOWN_MS = 15000;
+  // Detection thresholds (lowered for thin straps / white helmets)
+  const TH = { helmetColor: 0.35, helmetWhite: 0.45, skinBelow: 0.2, torsoVest: 0.30, strapLine: 0.35, linesNeeded: 2 };
+
+  const T = {
+    zh: { title: "训练前安全装备核验", helmet: "安全帽状态", vest: "安全衣状态", ok: "已穿戴", no: "未穿戴", wait: "等待识别",
+      kWhite: "白色安全帽", kColor: "彩色安全帽", kVest: "反光背心", kHarness: "荧光肩带式安全装备", nodetail: "未检测到",
+      warn: "请正确穿戴安全衣及安全帽", passed: "装备核验通过，【开始分析】已解锁",
+      noperson: "未检测到完整人体，请让头部至髋部完整入镜", simHint: "模拟视角：请勾选下方演示选项来模拟穿戴状态",
+      locked: "已锁定", unlocked: "已解锁", simH: "演示：模拟戴安全帽", simV: "演示：模拟穿安全衣", nodial: "演示模式：不实际拨号", test: "模拟摔倒测试",
+      note: "安全衣、安全帽识别仅为辅助核验（基于颜色与位置的本地判断），不能保证 100% 防护。",
+      gearAlertTitle: "未穿戴安全装备", gearAlertDesc: "请正确穿戴安全衣及安全帽后再开始训练", gearLost: "训练中检测到安全装备缺失", gotIt: "知道了",
+      logGear: "安全装备未穿戴：", sep: "、",
+      fallTitle: "检测到疑似摔倒", fallDesc: "倒计时结束后将自动拨打韩国急救电话 119", sec: "秒",
+      cancel: "我没事，取消呼叫", callNow: "立即拨打 119", close: "关闭",
+      dialing: "正在唤起拨号 119…", fallback: "已触发急救，请拨打 119", demo: "演示模式：未实际拨号（119）",
+      fallNote: "摔倒判定基于姿态启发式算法，可能误报或漏报，非临床诊断。",
+      logFall: "疑似摔倒，已启动119倒计时", logCancel: "用户取消了119急救呼叫", logDial: "倒计时结束，已触发119急救拨号" },
+    en: { title: "Pre-training Safety Gear Check", helmet: "Helmet status", vest: "Vest status", ok: "Worn", no: "Not worn", wait: "Waiting",
+      kWhite: "White helmet", kColor: "Colored helmet", kVest: "Reflective vest", kHarness: "Fluorescent strap harness", nodetail: "Not detected",
+      warn: "Please wear the safety vest and safety helmet correctly.", passed: "Gear verified – Start Analysis unlocked",
+      noperson: "No full body detected – keep head to hips in frame", simHint: "Simulated feed: tick the demo options below to simulate gear",
+      locked: "Locked", unlocked: "Unlocked", simH: "Demo: simulate helmet worn", simV: "Demo: simulate vest worn", nodial: "Demo mode: do not place a real call", test: "Simulate fall test",
+      note: "Vest/helmet recognition is only an auxiliary check (local color/position heuristics) and cannot guarantee 100% protection.",
+      gearAlertTitle: "Safety gear not worn", gearAlertDesc: "Please wear the safety vest and helmet correctly before training", gearLost: "Safety gear missing during training", gotIt: "Got it",
+      logGear: "Safety gear not worn: ", sep: ", ",
+      fallTitle: "Possible fall detected", fallDesc: "Korean emergency number 119 will be dialed automatically when the countdown ends", sec: "s",
+      cancel: "I'm OK – cancel call", callNow: "Call 119 now", close: "Close",
+      dialing: "Opening dialer for 119…", fallback: "Emergency triggered. Please call 119.", demo: "Demo mode: no real call placed (119)",
+      fallNote: "Fall detection is a pose heuristic and may give false alarms or misses. Not a clinical diagnosis.",
+      logFall: "Possible fall – 119 countdown started", logCancel: "User cancelled the 119 emergency call", logDial: "Countdown ended – 119 dial triggered" },
+    ko: { title: "훈련 전 안전장비 확인", helmet: "안전모 상태", vest: "안전조끼 상태", ok: "착용", no: "미착용", wait: "인식 대기",
+      kWhite: "흰색 안전모", kColor: "컬러 안전모", kVest: "반사 조끼", kHarness: "형광 어깨끈형 안전장비", nodetail: "미검출",
+      warn: "안전조끼와 안전모를 올바르게 착용해 주세요.", passed: "장비 확인 완료 – [분석 시작] 잠금 해제",
+      noperson: "전신이 감지되지 않았습니다. 머리~골반이 화면에 들어오게 해 주세요", simHint: "시뮬레이션 화면: 아래 데모 옵션으로 착용 상태를 시뮬레이션하세요",
+      locked: "잠김", unlocked: "해제됨", simH: "데모: 안전모 착용 시뮬레이션", simV: "데모: 안전조끼 착용 시뮬레이션", nodial: "데모 모드: 실제 발신 안 함", test: "낙상 시뮬레이션 테스트",
+      note: "안전조끼·안전모 인식은 보조 확인용(색상·위치 기반 로컬 판단)이며 100% 보호를 보장하지 않습니다.",
+      gearAlertTitle: "안전장비 미착용", gearAlertDesc: "안전조끼와 안전모를 올바르게 착용한 후 훈련을 시작하세요", gearLost: "훈련 중 안전장비 미착용 감지", gotIt: "확인",
+      logGear: "안전장비 미착용: ", sep: ", ",
+      fallTitle: "낙상 의심 감지", fallDesc: "카운트다운이 끝나면 한국 응급번호 119로 자동 발신합니다", sec: "초",
+      cancel: "괜찮아요, 호출 취소", callNow: "지금 119 전화", close: "닫기",
+      dialing: "119 발신 화면을 여는 중…", fallback: "응급 상황이 발동되었습니다. 119로 전화해 주세요.", demo: "데모 모드: 실제 발신하지 않음(119)",
+      fallNote: "낙상 판정은 자세 휴리스틱으로 오탐/미탐이 있을 수 있으며 임상 진단이 아닙니다.",
+      logFall: "낙상 의심 – 119 카운트다운 시작", logCancel: "사용자가 119 호출을 취소했습니다", logDial: "카운트다운 종료 – 119 발신 실행" }
+  };
+  const $ = (id) => document.getElementById(id);
+  const L = () => (typeof currentLang !== 'undefined' && T[currentLang]) ? currentLang : 'zh';
+  const tr = (k) => T[L()][k];
+
+  /* ---------- CSS ---------- */
+  const st = document.createElement('style');
+  st.textContent = `
+    .pc-card{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:#fff;border:2px solid #d1d5db;transition:border-color .2s,background .2s}
+    .pc-card.ok{border-color:#10b981;background:#ecfdf5}.pc-card.no{border-color:#ef4444;background:#fef2f2}
+    .pc-ico{font-size:28px;line-height:1}
+    .pc-name{font-size:11px;font-weight:600;color:#4b5563}
+    .pc-state{font-size:15px;font-weight:800;color:#6b7280}
+    .pc-card.ok .pc-state{color:#047857}.pc-card.no .pc-state{color:#b91c1c}
+    .pc-detail{font-size:10px;color:#4b5563}
+    .pc-msg{padding:8px 10px;border-radius:10px;font-size:12px;font-weight:600;background:#fffbeb;border:1.5px solid #fcd34d;color:#b45309}
+    .pc-msg.ok{background:#ecfdf5;border-color:#6ee7b7;color:#047857}
+    .pc-shake{animation:pc-sh .4s}@keyframes pc-sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .pc-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px;background:#fff;border:1px solid #d1d5db;color:#4b5563}
+    .pc-btn{min-height:36px;padding:6px 12px;font-size:12px;font-weight:600;border-radius:10px;touch-action:manipulation}`;
+  document.head.appendChild(st);
+
+  /* ---------- Panel + modals ---------- */
+  const panel = document.createElement('div');
+  panel.className = 'pt-2 border-t border-gray-200 space-y-2';
+  panel.innerHTML = `
+    <div class="flex items-center justify-between gap-2">
+      <p class="text-[11px] font-semibold text-gray-900"><i class="fa-solid fa-user-shield text-cyan-700 mr-1"></i><span id="pc-title"></span></p>
+      <span id="pc-pill" class="pc-pill"></span>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      ${['helmet', 'vest'].map(k => `<div id="pc-card-${k}" class="pc-card"><div id="pc-ico-${k}" class="pc-ico">⏳</div>
+        <div class="min-w-0"><div id="pc-name-${k}" class="pc-name"></div><div id="pc-state-${k}" class="pc-state"></div><div id="pc-detail-${k}" class="pc-detail"></div></div></div>`).join('')}
+    </div>
+    <div id="pc-msg" class="pc-msg" role="alert"></div>
+    <div class="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
+      <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="pc-chk-sim-helmet" class="accent-cyan-500 w-4 h-4"><span id="pc-lbl-sim-helmet"></span></label>
+      <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="pc-chk-sim-vest" class="accent-cyan-500 w-4 h-4"><span id="pc-lbl-sim-vest"></span></label>
+      <label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" id="pc-chk-nodial" class="accent-cyan-500 w-4 h-4"><span id="pc-lbl-nodial"></span></label>
+      <button type="button" id="pc-btn-test" class="pc-btn bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300"></button>
+    </div>
+    <p id="pc-note" class="text-[11px] text-gray-600 leading-relaxed"></p>`;
+  const tagRow = $('tag-fatigue').parentElement.parentElement;
+  tagRow.parentElement.insertBefore(panel, tagRow);
+
+  const gearModal = document.createElement('div');
+  gearModal.id = 'pc-gear-modal';
+  gearModal.className = 'hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4';
+  gearModal.innerHTML = `
+    <div class="bg-white border-2 border-red-500 rounded-3xl max-w-md w-full p-6 text-center space-y-4 shadow-2xl">
+      <div class="w-16 h-16 mx-auto rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-3xl animate-pulse">❌</div>
+      <h3 id="pc-ga-title" class="text-xl font-black text-red-600"></h3>
+      <ul id="pc-ga-list" class="text-sm font-bold text-red-700 space-y-1"></ul>
+      <p id="pc-ga-desc" class="text-xs text-gray-600"></p>
+      <button type="button" id="pc-ga-ok" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm"></button>
+    </div>`;
+  document.body.appendChild(gearModal);
+
+  const modal = document.createElement('div');
+  modal.id = 'pc-fall-modal';
+  modal.className = 'hidden fixed inset-0 z-50 bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-4';
+  modal.innerHTML = `
+    <div class="bg-white border-2 border-red-500 rounded-3xl max-w-lg w-full p-6 text-center space-y-4 shadow-2xl">
+      <div class="w-20 h-20 mx-auto rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center text-red-600 text-4xl animate-pulse"><i class="fa-solid fa-person-falling"></i></div>
+      <h3 id="pc-fall-title" class="text-2xl font-black text-red-600 tracking-wider"></h3>
+      <div id="pc-stage-count" class="space-y-2">
+        <p id="pc-fall-desc" class="text-xs text-gray-600"></p>
+        <div class="text-6xl font-black text-red-600 font-mono"><span id="pc-count">5</span><span id="pc-sec" class="text-lg ml-1"></span></div>
+        <div class="h-2 rounded bg-gray-200 overflow-hidden"><div id="pc-bar" class="h-2 bg-red-500" style="width:100%;transition:width 1s linear"></div></div>
+      </div>
+      <div id="pc-stage-dial" class="hidden space-y-2">
+        <p id="pc-dial-msg" class="text-base font-bold text-red-600"></p>
+        <a id="pc-tel" href="tel:119" class="inline-block text-lg font-extrabold text-red-700 underline">119</a>
+      </div>
+      <div class="grid grid-cols-1 gap-2">
+        <button type="button" id="pc-btn-callnow" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm shadow-lg shadow-red-600/40"></button>
+        <button type="button" id="pc-btn-cancel" class="w-full py-3 rounded-xl bg-white hover:bg-gray-100 text-gray-900 font-bold text-sm border border-gray-300"></button>
+      </div>
+      <p id="pc-fall-note" class="text-[11px] text-gray-600"></p>
+    </div>`;
+  document.body.appendChild(modal);
+  $('pc-chk-nodial').checked = DEMO_NO_DIAL_DEFAULT;
+
+  /* ---------- Gear detection ---------- */
+  // Time-based debounce: turns on after onMs of continuous hits, off after offMs of continuous misses
+  class Deb { constructor(onMs, offMs) { this.onMs = onMs; this.offMs = offMs; this.reset(); }
+    reset() { this.s = false; this.p = 0; this.n = 0; this.kind = null; }
+    push(v, now, kind) { if (v) { this.n = 0; this.kind = kind || this.kind; if (!this.p) this.p = now; if (now - this.p >= this.onMs) this.s = true; }
+      else { this.p = 0; if (!this.n) this.n = now; if (now - this.n >= this.offMs) this.s = false; } } }
+  const helmetD = new Deb(700, 1200), vestD = new Deb(700, 1200);
+  let personSeen = false, lastScore = { helmet: 0, vest: 0 };
+
+  const gc = document.createElement('canvas');
+  const gx = gc.getContext('2d', { willReadFrequently: true });
+  function hsv(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), d = mx - Math.min(r, g, b); let h = 0;
+    if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+    return [h, mx ? d / mx : 0, mx]; }
+  // hi-vis orange / yellow / fluorescent yellow-green
+  const isHiVis = (h, s, v) => h >= 18 && h <= 95 && s >= 0.55 && v >= 0.55;
+  const isHelmColor = (h, s, v) => isHiVis(h, s, v) || ((h < 14 || h >= 345) && s >= 0.6 && v >= 0.4) || (h >= 195 && h <= 255 && s >= 0.55 && v >= 0.35);
+  const isWhite = (h, s, v) => s <= 0.18 && v >= 0.78;
+  const isSkin = (h, s, v) => (h <= 50 || h >= 345) && s >= 0.15 && s <= 0.7 && v >= 0.3;
+  const lerp = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+  let IMG = null;
+  function hit(x, y, f) { const X = Math.round(x), Y = Math.round(y); if (X < 0 || Y < 0 || X >= IMG.w || Y >= IMG.h) return null;
+    const i = (Y * IMG.w + X) * 4, c = hsv(IMG.d[i], IMG.d[i + 1], IMG.d[i + 2]); return f(c[0], c[1], c[2]); }
+  function frac(pts, f) { let n = 0, k = 0; pts.forEach(p => { const r = hit(p[0], p[1], f); if (r === null) return; n++; if (r) k++; }); return n ? k / n : 0; }
+  // Strap line: for each point along p->q accept a hit at any lateral offset (strap width unknown); axis 'x' (shoulder straps) or 'y' (belt)
+  function lineFrac(p, q, f, span, axis) { let ok = 0; const N = 9;
+    for (let i = 0; i < N; i++) { const m = lerp(p, q, 0.1 + 0.8 * i / (N - 1)); let h = false;
+      [-1, -0.5, 0, 0.5, 1].forEach(o => { if (!h && hit(axis === 'x' ? m[0] + o * span : m[0], axis === 'y' ? m[1] + o * span : m[1], f)) h = true; });
+      if (h) ok++; }
+    return ok / N; }
+
+  function analyzeGear(res) {
+    const lm = res.poseLandmarks, img = res.image; if (!lm || !img) return null;
+    const vis = (i) => lm[i] && (lm[i].visibility === undefined || lm[i].visibility >= 0.5);
+    if (!(vis(0) && vis(11) && vis(12) && vis(23) && vis(24))) return null;
+    const asp = (typeof skeletonAspectOf === 'function') ? skeletonAspectOf(res) : 1.33;
+    const gw = 160, gh = Math.max(1, Math.round(gw / asp));
+    gc.width = gw; gc.height = gh; gx.drawImage(img, 0, 0, gw, gh);
+    IMG = { w: gw, h: gh, d: gx.getImageData(0, 0, gw, gh).data };
+    const P = (i) => [lm[i].x * gw, lm[i].y * gh];
+    const a = P(11), b = P(12), c = P(24), d = P(23);
+    const sw = Math.hypot(a[0] - b[0], a[1] - b[1]), u = 0.45 * sw;
+    // --- Helmet: sample the band directly on the head (where hair/skin would be on a bare head) ---
+    const e = (vis(7) && vis(8)) ? lerp(P(7), P(8), 0.5) : P(0);
+    const band = (y0, y1) => { const pts = []; for (let i = 0; i < 8; i++) for (let j = 0; j < 5; j++) pts.push([e[0] - 0.5 * u + u * i / 7, e[1] - (y0 + (y1 - y0) * j / 4) * u]); return pts; };
+    const hb = band(0.25, 0.9);
+    const colorF = frac(hb, isHelmColor);
+    const whiteF = frac(hb, isWhite);
+    const skinF = frac(band(-0.05, 0.2), isSkin);      // a real face must sit right under a real helmet (rejects plain white walls)
+    let helmet = { ok: false, kind: null, score: Math.max(colorF, whiteF) };
+    if (colorF >= TH.helmetColor) helmet = { ok: true, kind: 'kColor', score: colorF };
+    else if (whiteF >= TH.helmetWhite && skinF >= TH.skinBelow) helmet = { ok: true, kind: 'kWhite', score: whiteF };
+    // --- Vest / strap harness ---
+    const vp = []; for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) { const uu = 0.2 + 0.6 * i / 6, vv = 0.2 + 0.6 * j / 6; vp.push(lerp(lerp(a, b, uu), lerp(d, c, uu), vv)); }
+    const torsoF = frac(vp, isHiVis);
+    const lL = lineFrac(a, d, isHiVis, 0.1 * sw, 'x'), lR = lineFrac(b, c, isHiVis, 0.1 * sw, 'x'), lB = lineFrac(d, c, isHiVis, 0.2 * sw, 'y');
+    const lines = [lL, lR, lB].filter(v => v >= TH.strapLine).length;
+    let vest = { ok: false, kind: null, score: Math.max(torsoF, (lL + lR + lB) / 3) };
+    if (torsoF >= TH.torsoVest) vest = { ok: true, kind: 'kVest', score: torsoF };
+    else if (lines >= TH.linesNeeded) vest = { ok: true, kind: 'kHarness', score: (lL + lR + lB) / 3 };
+    const n = (p) => [p[0] / gw, p[1] / gh];
+    return { helmet, vest, rois: { hb: [(e[0] - 0.5 * u) / gw, (e[1] - 0.9 * u) / gh, u / gw, 0.65 * u / gh], q: [a, b, c, d].map(n), lines: [[a, d], [b, c], [d, c]].map(l => l.map(n)) } };
+  }
+
+  /* ---------- States + UI ---------- */
+  let gearOK = false, states = { h: 'wait', v: 'wait' };
+  function computeStates() {
+    const sim = currentSourceMode === 'sim';
+    const h = sim ? ($('pc-chk-sim-helmet').checked ? 'ok' : 'no') : (!personSeen && !helmetD.s ? 'wait' : (helmetD.s ? 'ok' : 'no'));
+    const v = sim ? ($('pc-chk-sim-vest').checked ? 'ok' : 'no') : (!personSeen && !vestD.s ? 'wait' : (vestD.s ? 'ok' : 'no'));
+    states = { h, v }; gearOK = h === 'ok' && v === 'ok'; return states;
+  }
+  function setCard(k, s, detail) {
+    $('pc-card-' + k).className = 'pc-card ' + (s === 'ok' ? 'ok' : s === 'no' ? 'no' : '');
+    $('pc-ico-' + k).textContent = s === 'ok' ? '✅' : s === 'no' ? '❌' : '⏳';
+    $('pc-state-' + k).textContent = tr(s);
+    $('pc-detail-' + k).textContent = detail;
+  }
+  function render() {
+    const sim = currentSourceMode === 'sim', s = computeStates();
+    $('pc-title').textContent = tr('title');
+    $('pc-name-helmet').textContent = tr('helmet'); $('pc-name-vest').textContent = tr('vest');
+    const dH = s.h === 'ok' ? (sim ? '—' : tr(helmetD.kind || 'kColor') + ' · ' + Math.round(lastScore.helmet * 100) + '%') : (s.h === 'wait' ? '' : tr('nodetail'));
+    const dV = s.v === 'ok' ? (sim ? '—' : tr(vestD.kind || 'kVest') + ' · ' + Math.round(lastScore.vest * 100) + '%') : (s.v === 'wait' ? '' : tr('nodetail'));
+    setCard('helmet', s.h, dH); setCard('vest', s.v, dV);
+    $('pc-pill').textContent = (gearOK || isAnalyzing ? '🔓 ' + tr('unlocked') : '🔒 ' + tr('locked'));
+    const m = $('pc-msg'); m.classList.toggle('ok', gearOK);
+    m.textContent = gearOK ? tr('passed') : (sim ? tr('simHint') + ' · ' + tr('warn') : (personSeen ? tr('warn') : tr('noperson') + ' · ' + tr('warn')));
+    $('pc-lbl-sim-helmet').textContent = tr('simH'); $('pc-lbl-sim-vest').textContent = tr('simV');
+    $('pc-lbl-nodial').textContent = tr('nodial'); $('pc-btn-test').textContent = tr('test'); $('pc-note').textContent = tr('note');
+    const btn = $('btn-start-analysis'), locked = !isAnalyzing && !gearOK;
+    btn.setAttribute('aria-disabled', locked); btn.style.opacity = locked ? '.45' : ''; btn.style.cursor = locked ? 'not-allowed' : ''; btn.style.filter = locked ? 'grayscale(.6)' : '';
+    renderFallText(); renderGearAlertText();
+  }
+
+  /* ---------- Gear alert (not worn) ---------- */
+  let bctx = null;
+  function beep() { if (!$('sw-sound').checked) return;
+    try { bctx = bctx || new (window.AudioContext || window.webkitAudioContext)(); if (bctx.state === 'suspended') bctx.resume();
+      const o = bctx.createOscillator(), g = bctx.createGain(), t = bctx.currentTime; o.type = 'square'; o.frequency.value = 700; o.connect(g); g.connect(bctx.destination);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.01, t + 0.6); o.start(t); o.stop(t + 0.6); } catch (e) {} }
+  let gearAlertLockUntil = 0, gearAlertLost = false;
+  function missingNames() { const s = computeStates(), out = []; if (s.h !== 'ok') out.push(tr('helmet').replace(/状态|status|상태/i, '').trim()); if (s.v !== 'ok') out.push(tr('vest').replace(/状态|status|상태/i, '').trim()); return out; }
+  function renderGearAlertText() {
+    $('pc-ga-title').textContent = gearAlertLost ? tr('gearLost') : tr('gearAlertTitle');
+    $('pc-ga-desc').textContent = tr('warn') + ' ' + tr('note'); $('pc-ga-ok').textContent = tr('gotIt');
+    const ul = $('pc-ga-list'); ul.innerHTML = ''; missingNames().forEach(n => { const li = document.createElement('li'); li.textContent = '❌ ' + n + ' · ' + tr('no'); ul.appendChild(li); });
+  }
+  function showGearAlert(lost) {
+    if (!gearModal.classList.contains('hidden')) return;
+    gearAlertLost = !!lost; renderGearAlertText(); gearModal.classList.remove('hidden'); beep();
+    if (typeof addAlarmLog === 'function') addAlarmLog('AUTO', tr('logGear') + missingNames().join(tr('sep')));
+  }
+  $('pc-ga-ok').addEventListener('click', () => { gearModal.classList.add('hidden'); gearAlertLockUntil = performance.now() + GEAR_ALERT_COOLDOWN_MS; });
+
+  let missingSince = 0, lastRenderTs = 0;
+  function watchGearDuringAnalysis() {   // called every analysis frame
+    const now = performance.now(); computeStates();
+    if (gearOK) missingSince = 0; else if (!missingSince) missingSince = now;
+    else if (now - missingSince >= GEAR_LOST_ALERT_MS && now > gearAlertLockUntil && fallIdle()) showGearAlert(true);
+    if (now - lastRenderTs > 300) { lastRenderTs = now; render(); }
+  }
+  const fallIdle = () => !fall.active;
+
+  /* ---------- Frame handling ---------- */
+  function updateFromResult(res) {
+    let g = null; try { g = analyzeGear(res); } catch (e) { console.warn('gear check', e); }
+    const now = performance.now(); personSeen = !!g;
+    helmetD.push(!!(g && g.helmet.ok), now, g && g.helmet.kind); vestD.push(!!(g && g.vest.ok), now, g && g.vest.kind);
+    if (g) lastScore = { helmet: g.helmet.score, vest: g.vest.score };
+    return g;
+  }
+  function precheckResults(res) {
+    const w = poseCanvas.width, h = poseCanvas.height;
+    poseCtx.save(); poseCtx.clearRect(0, 0, w, h);
+    if ($('screen-mask').classList.contains('hidden') && res.image) poseCtx.drawImage(res.image, 0, 0, w, h);
+    else { poseCtx.fillStyle = CANVAS_MASK_BG; poseCtx.fillRect(0, 0, w, h); }
+    const g = updateFromResult(res);
+    if (g) { poseCtx.lineWidth = 3;
+      poseCtx.strokeStyle = g.helmet.ok ? '#10b981' : '#ef4444'; const r = g.rois.hb; poseCtx.strokeRect(r[0] * w, r[1] * h, r[2] * w, r[3] * h);
+      poseCtx.strokeStyle = g.vest.ok ? '#10b981' : '#ef4444';
+      g.rois.lines.forEach(l => { poseCtx.beginPath(); poseCtx.moveTo(l[0][0] * w, l[0][1] * h); poseCtx.lineTo(l[1][0] * w, l[1][1] * h); poseCtx.stroke(); }); }
+    poseCtx.restore(); render();
+  }
+  const origResults = window.onPoseResults;
+  window.onPoseResults = function (r) {
+    if (!isAnalyzing) return precheckResults(r);
+    const x = origResults.apply(this, arguments); try { updateFromResult(r); } catch (e) {} return x;
+  };
+
+  let busy = false;
+  setInterval(() => {
+    if (busy || isProcessingFrame || !poseEngine || videoElement.readyState < 2) return;
+    if (!((currentSourceMode === 'webcam' && !isAnalyzing) || currentSourceMode === 'file')) return;
+    busy = true; Promise.resolve(poseEngine.send({ image: videoElement })).catch(() => {}).finally(() => { busy = false; });
+  }, 130);
+
+  /* ---------- Gate the Start button ---------- */
+  const origToggle = window.toggleAnalysis;
+  window.toggleAnalysis = function () {
+    if (!isAnalyzing && !gearOK) { render(); const m = $('pc-msg'); m.classList.remove('pc-shake'); void m.offsetWidth; m.classList.add('pc-shake'); showGearAlert(false); return; }
+    const r = origToggle.apply(this, arguments);
+    if (isAnalyzing) { fall.hist = []; fall.hSince = 0; fall.armedUntil = 0; missingSince = 0; gearAlertLockUntil = performance.now() + 5000; }
+    render(); return r;
+  };
+  const origSource = window.handleSourceChange;
+  window.handleSourceChange = function () { const r = origSource.apply(this, arguments); helmetD.reset(); vestD.reset(); personSeen = false; render(); return r; };
+  ['pc-chk-sim-helmet', 'pc-chk-sim-vest'].forEach(id => $(id).addEventListener('change', () => render()));
+
+  /* ---------- Fall detection (analysis phase) ---------- */
+  const fall = { active: false, test: false, left: 0, hist: [], hSince: 0, armedUntil: 0, lockUntil: 0, cd: null, snd: null, stage: 'count' };
+  function fallStep(lm, aspect) {
+    const now = performance.now();
+    if (!isAnalyzing || fall.active || now < fall.lockUntil || !lm) return;
+    const v = (i) => lm[i] && (lm[i].visibility === undefined || lm[i].visibility >= 0.4);
+    if (!(v(11) && v(12) && v(23) && v(24))) { fall.hSince = 0; return; }
+    const sx = (lm[11].x + lm[12].x) / 2 * aspect, sy = (lm[11].y + lm[12].y) / 2, hx = (lm[23].x + lm[24].x) / 2 * aspect, hy = (lm[23].y + lm[24].y) / 2;
+    const tilt = Math.atan2(Math.abs(sx - hx), Math.abs(sy - hy)) * 180 / Math.PI;
+    let x0 = 9, x1 = -9, y0 = 9, y1 = -9;
+    lm.forEach(p => { if (p && (p.visibility === undefined || p.visibility >= 0.4)) { const x = p.x * aspect; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); } });
+    const horizontal = tilt >= 55 && (x1 - x0) >= (y1 - y0) * 0.9;
+    fall.hist.push({ t: now, y: hy }); fall.hist = fall.hist.filter(h => now - h.t <= 1200);
+    if (hy - Math.min(...fall.hist.map(h => h.y)) >= 0.18) fall.armedUntil = now + 2500;
+    if (horizontal) { if (!fall.hSince) fall.hSince = now; if (now - fall.hSince >= 700 && now < fall.armedUntil) startFall(false); }
+    else fall.hSince = 0;
+  }
+  const prevDraw = window.drawSkeletonOnly;
+  window.drawSkeletonOnly = function (lm, aspect) {
+    const r = prevDraw.apply(this, arguments);
+    try { fallStep(lm, aspect || 1); if (isAnalyzing) watchGearDuringAnalysis(); } catch (e) { console.warn('safety', e); }
+    return r;
+  };
+
+  function renderFallText() {
+    $('pc-fall-title').textContent = tr('fallTitle'); $('pc-fall-desc').textContent = tr('fallDesc'); $('pc-sec').textContent = tr('sec');
+    $('pc-btn-callnow').textContent = tr('callNow'); $('pc-btn-cancel').textContent = fall.stage === 'dial' ? tr('close') : tr('cancel');
+    $('pc-fall-note').textContent = tr('fallNote') + ' ' + tr('note');
+    if (fall.stage === 'dial') $('pc-dial-msg').textContent = fall.msgKey ? tr(fall.msgKey) : '';
+  }
+  function log(k) { if (typeof addAlarmLog === 'function') addAlarmLog('AUTO', tr(k)); }
+  function startFall(isTest) {
+    if (fall.active) return;
+    Object.assign(fall, { active: true, test: isTest, left: FALL_COUNTDOWN_S, stage: 'count', msgKey: null });
+    gearModal.classList.add('hidden');
+    $('pc-stage-count').classList.remove('hidden'); $('pc-stage-dial').classList.add('hidden');
+    $('pc-count').textContent = fall.left; $('pc-bar').style.transition = 'none'; $('pc-bar').style.width = '100%';
+    modal.classList.remove('hidden'); renderFallText();
+    setTimeout(() => { $('pc-bar').style.transition = 'width 1s linear'; $('pc-bar').style.width = ((fall.left - 1) / FALL_COUNTDOWN_S * 100) + '%'; }, 30);
+    playAlarmSound('sos'); fall.snd = setInterval(() => playAlarmSound('sos'), 1500);
+    log('logFall'); setRiskLevel(3); $('tag-fall').className = CLS_TAG_DANGER;
+    fall.cd = setInterval(() => {
+      fall.left--; $('pc-count').textContent = Math.max(fall.left, 0);
+      $('pc-bar').style.width = (Math.max(fall.left - 1, 0) / FALL_COUNTDOWN_S * 100) + '%';
+      if (fall.left <= 0) dialEmergency();
+    }, 1000);
+  }
+  function stopTimers() { clearInterval(fall.cd); clearInterval(fall.snd); fall.cd = fall.snd = null; if ('speechSynthesis' in window) window.speechSynthesis.cancel(); }
+  function dialEmergency() {
+    stopTimers(); fall.stage = 'dial'; log('logDial');
+    $('pc-stage-count').classList.add('hidden'); $('pc-stage-dial').classList.remove('hidden');
+    if (fall.test || $('pc-chk-nodial').checked) { fall.msgKey = 'demo'; renderFallText(); return; }
+    fall.msgKey = 'dialing'; renderFallText();
+    let left = false; const hid = () => { if (document.hidden) left = true; }, blr = () => { left = true; };
+    document.addEventListener('visibilitychange', hid); window.addEventListener('blur', blr);
+    try { window.location.href = 'tel:' + EMERGENCY_NUMBER; } catch (e) {}
+    setTimeout(() => {
+      document.removeEventListener('visibilitychange', hid); window.removeEventListener('blur', blr);
+      if (!left) { fall.msgKey = 'fallback'; renderFallText(); }
+    }, 1500);
+  }
+  function endFall(cancelled) {
+    stopTimers(); if (cancelled && fall.stage === 'count') log('logCancel');
+    modal.classList.add('hidden'); fall.active = false; fall.stage = 'count'; fall.hSince = 0; fall.armedUntil = 0; fall.hist = [];
+    fall.lockUntil = performance.now() + 8000; $('tag-fall').className = CLS_TAG_IDLE; setRiskLevel(1);
+  }
+  $('pc-btn-cancel').addEventListener('click', () => endFall(true));
+  $('pc-btn-callnow').addEventListener('click', () => { if (fall.active && fall.stage === 'count') dialEmergency(); else if (fall.stage === 'dial') { fall.test = false; dialEmergency(); } });
+  $('pc-btn-test').addEventListener('click', () => startFall(true));
+
+  const prevLang = window.setLanguage;
+  window.setLanguage = function () { const r = prevLang.apply(this, arguments); render(); return r; };
+  render();
+})();
+
+  </script>
 </body>
 </html>
