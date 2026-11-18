@@ -2860,8 +2860,10 @@
       S.lastFeedTs = now; S.frames++; S.fpsCount++;
       if (hasPerson(lm)) {
         S.lastPersonTs = now;
-        S.reba = computeREBA(lm, aspect || 1);
-        if (S.reba) handleRebaAlert(S.reba, now);
+        if (!window.__MP_ACTIVE) {
+          S.reba = computeREBA(lm, aspect || 1);
+          if (S.reba) handleRebaAlert(S.reba, now);
+        }
       } else if (now - S.lastPersonTs > PERSON_HOLD_MS) {
         S.reba = null; S.rebaTier = 0;
       }
@@ -2878,7 +2880,7 @@
     }
 
     function onJointCheck(angle, opts) {
-      if (opts && opts.silent) return;
+      if ((opts && opts.silent) || window.__MP_ACTIVE) return;
       if (typeof isOutOfRange !== 'function' || !isOutOfRange(angle)) return;
       const now = Date.now();
       S.jointOutUntil = now + 3000;
@@ -2922,7 +2924,7 @@
         const head = document.createElement('div');
         head.className = 'mon-alert-head';
         const typeLabel = a.type === 'angle' ? T.typeAngle : T.typePosture;
-        head.textContent = '#' + a.id + T.colon + typeLabel + T.comma + T.riskWord + ' ' + pageRiskText(a.level);
+        head.textContent = (a.pid ? '\uD83D\uDC64' + a.pid + ' ' : '') + '#' + a.id + T.colon + typeLabel + T.comma + T.riskWord + ' ' + pageRiskText(a.level);
         const body = document.createElement('div');
         body.className = 'mon-alert-body';
         body.textContent = a.type === 'angle'
@@ -2941,7 +2943,7 @@
       S.lastRender = now;
       const T = I18N[lang()];
       const live = (now - S.lastFeedTs) < STALE_MS;
-      const count = (live && (now - S.lastPersonTs) < PERSON_HOLD_MS) ? 1 : 0;
+      const count = window.__MP_ACTIVE ? (live ? (window.__MP_COUNT || 0) : 0) : ((live && (now - S.lastPersonTs) < PERSON_HOLD_MS) ? 1 : 0);
 
       $('mon-title').textContent = T.title;
       $('mon-recv-title').textContent = T.recv;
@@ -2952,7 +2954,7 @@
       renderAlerts(T);
 
       // Reception status: trainee count + risk level
-      const lvl = overallLevel(now);
+      const lvl = window.__MP_ACTIVE ? (window.__MP_LEVEL || 1) : overallLevel(now);
       const card = $('mon-status-card');
       card.className = 'mon-status ' + (count === 0 ? 'idle' : 'l' + lvl);
       $('mon-status-title').textContent = T.status;
@@ -2960,6 +2962,7 @@
       $('mon-reba-line').textContent = (S.reba && count)
         ? fmt(T.rebaLine, { score: S.reba.score, level: T.rebaLevels[S.reba.idx], frames: S.frames })
         : fmt(T.rebaNone, { frames: S.frames });
+      if (window.__MP_ACTIVE && window.__MP_SUMMARY && count) $('mon-reba-line').textContent = window.__MP_SUMMARY();
 
       // Simulated cloud
       $('mon-cloud-title').textContent = T.cloud;
@@ -3021,6 +3024,7 @@
       };
     }
 
+    window.__monAddAlert = addAlert;   // per-person alert cards (multi-person module)
     render();
   })();
   </script>
@@ -3225,6 +3229,7 @@
   /* ---------- States + UI ---------- */
   let gearOK = false, states = { h: 'wait', v: 'wait' };
   function computeStates() {
+    if (window.__MP_ACTIVE && window.__MP_STATES) { const o = window.__MP_STATES(); if (o) { states = o; gearOK = o.h === 'ok' && o.v === 'ok'; return states; } }   // multi-person: ALL persons must pass
     const sim = currentSourceMode === 'sim';
     const h = sim ? ($('pc-chk-sim-helmet').checked ? 'ok' : 'no') : (!personSeen && !helmetD.s ? 'wait' : (helmetD.s ? 'ok' : 'no'));
     const v = sim ? ($('pc-chk-sim-vest').checked ? 'ok' : 'no') : (!personSeen && !vestD.s ? 'wait' : (vestD.s ? 'ok' : 'no'));
@@ -3267,6 +3272,7 @@
     const ul = $('pc-ga-list'); ul.innerHTML = ''; missingNames().forEach(n => { const li = document.createElement('li'); li.textContent = '❌ ' + n + ' · ' + tr('no'); ul.appendChild(li); });
   }
   function showGearAlert(lost) {
+    if (lost && window.__MP_ACTIVE) return;   // multi-person: in-training gear alerts are raised per person by the multi-person module
     if (!gearModal.classList.contains('hidden')) return;
     gearAlertLost = !!lost; renderGearAlertText(); gearModal.classList.remove('hidden'); beep();
     if (typeof addAlarmLog === 'function') addAlarmLog('AUTO', tr('logGear') + missingNames().join(tr('sep')));
@@ -3347,12 +3353,12 @@
   const prevDraw = window.drawSkeletonOnly;
   window.drawSkeletonOnly = function (lm, aspect) {
     const r = prevDraw.apply(this, arguments);
-    try { fallStep(lm, aspect || 1); if (isAnalyzing) watchGearDuringAnalysis(); } catch (e) { console.warn('safety', e); }
+    try { if (!window.__MP_ACTIVE) fallStep(lm, aspect || 1); if (isAnalyzing) watchGearDuringAnalysis(); } catch (e) { console.warn('safety', e); }
     return r;
   };
 
   function renderFallText() {
-    $('pc-fall-title').textContent = tr('fallTitle'); $('pc-fall-desc').textContent = tr('fallDesc'); $('pc-sec').textContent = tr('sec');
+    $('pc-fall-title').textContent = tr('fallTitle') + (fall.who ? ' · #' + fall.who : ''); $('pc-fall-desc').textContent = tr('fallDesc'); $('pc-sec').textContent = tr('sec');
     $('pc-btn-callnow').textContent = tr('callNow'); $('pc-btn-cancel').textContent = fall.stage === 'dial' ? tr('close') : tr('cancel');
     $('pc-fall-note').textContent = tr('fallNote') + ' ' + tr('note');
     if (fall.stage === 'dial') $('pc-dial-msg').textContent = fall.msgKey ? tr(fall.msgKey) : '';
@@ -3399,9 +3405,245 @@
 
   const prevLang = window.setLanguage;
   window.setLanguage = function () { const r = prevLang.apply(this, arguments); render(); return r; };
+  window.__pc = { analyzeGear, startFall, fall, tr };   // used by the multi-person module
   render();
 })();
 
   </script>
+
+  <!-- ================= 多人同时识别模块 START：PoseLandmarker 多目标 + 独立ID + 逐人判定 ================= -->
+  <script id="multi-person-script">
+/* Multi-person layer: MediaPipe Tasks PoseLandmarker (numPoses>1) behind a Pose-compatible adapter,
+   stable per-person IDs, independent gear / risk / fall judgement, per-person alerts + status panel.
+   Existing single-person modules keep running on a "focus" person; sim mode is untouched. */
+(function () {
+  const MAXP = 6, LOST_MS = 1500, PRESENT_MS = 800, GEAR_NO_MS = 3000, GEAR_CD = 15000, RISK_CD = 10000, FALL_CD = 8000, TOAST_MS = 12000;
+  const VISION = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+  const MODEL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task';
+  const $ = (id) => document.getElementById(id);
+  const T = {
+    zh: { title: '多人识别与独立判定', count: '当前 {n} 人', helmet: '安全帽', vest: '反光背心', ok: '已穿戴', no: '未穿戴', wait: '识别中', none: '未检测到人员',
+      hint: '点击人员卡片可让骨架/角度面板跟随该人员', focus: '骨架面板跟随', eMulti: '多人引擎', eLoad: '引擎加载中…', eLegacy: '回退单人引擎', eSim: '模拟视角为单人演示',
+      gearMsg: '未穿戴：{items}', riskMsg: '高危姿态：{why}', rebaWhy: 'REBA {s}', jointWhy: '{j} {a}° 超限', fallMsg: '疑似摔倒', gearT: '装备未穿戴', riskT: '高危损伤预警', fallT: '疑似摔倒', person: '人员', sum: '人员状态：' },
+    en: { title: 'Multi-person Detection', count: '{n} person(s) in view', helmet: 'Helmet', vest: 'Vest', ok: 'Worn', no: 'Not worn', wait: 'Checking', none: 'No person detected',
+      hint: 'Tap a card to make the skeleton/angle panel follow that person', focus: 'Skeleton panel follows', eMulti: 'Multi-person engine', eLoad: 'Loading engine…', eLegacy: 'Fallback single-person engine', eSim: 'Simulated feed is single-person demo',
+      gearMsg: 'Not worn: {items}', riskMsg: 'High-risk posture: {why}', rebaWhy: 'REBA {s}', jointWhy: '{j} {a}° out of range', fallMsg: 'Possible fall', gearT: 'Gear not worn', riskT: 'High injury risk', fallT: 'Possible fall', person: 'Person', sum: 'Persons: ' },
+    ko: { title: '다중 인원 인식·개별 판정', count: '현재 {n}명', helmet: '안전모', vest: '반사 조끼', ok: '착용', no: '미착용', wait: '인식 중', none: '감지된 인원 없음',
+      hint: '카드를 누르면 골격/각도 패널이 해당 인원을 따라갑니다', focus: '골격 패널 추적', eMulti: '다중 인원 엔진', eLoad: '엔진 로딩 중…', eLegacy: '단일 인원 엔진(대체)', eSim: '시뮬레이션은 단일 인원 데모',
+      gearMsg: '미착용: {items}', riskMsg: '고위험 자세: {why}', rebaWhy: 'REBA {s}', jointWhy: '{j} {a}° 범위 초과', fallMsg: '낙상 의심', gearT: '장비 미착용', riskT: '고위험 손상 경고', fallT: '낙상 의심', person: '인원', sum: '인원 상태: ' }
+  };
+  const L = () => (typeof currentLang !== 'undefined' && T[currentLang]) ? currentLang : 'zh';
+  const tr = (k, v) => { let s = T[L()][k]; if (v) for (const x in v) s = s.replace('{' + x + '}', v[x]); return s; };
+  let engineState = 'load';
+
+  /* ---------- 1. Engine adapter: same send()/onResults() surface as legacy Pose, but N persons ---------- */
+  class MPEngine {
+    constructor() { this.cb = null; this.det = null; this.legacy = null; this.last = 0; this.init(); }
+    setOptions() {}
+    onResults(cb) { this.cb = cb; }
+    async init() {
+      try {
+        const m = await import(VISION + '/vision_bundle.mjs');
+        const fs = await m.FilesetResolver.forVisionTasks(VISION + '/wasm');
+        const mk = (d) => m.PoseLandmarker.createFromOptions(fs, { baseOptions: { modelAssetPath: MODEL, delegate: d }, runningMode: 'VIDEO', numPoses: MAXP,
+          minPoseDetectionConfidence: 0.5, minPosePresenceConfidence: 0.5, minTrackingConfidence: 0.5 });
+        try { this.det = await mk('GPU'); } catch (e) { this.det = await mk('CPU'); }
+        engineState = 'multi';
+      } catch (e) {
+        console.warn('PoseLandmarker unavailable, falling back to single-person Pose', e);
+        if (typeof Pose === 'undefined') return;
+        this.legacy = new Pose({ locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}` });
+        this.legacy.setOptions({ modelComplexity: 1, smoothLandmarks: true, enableSegmentation: false, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+        this.legacy.onResults((r) => this.cb && this.cb({ image: r.image, poseLandmarks: r.poseLandmarks || null, multiPoseLandmarks: r.poseLandmarks ? [r.poseLandmarks] : [] }));
+        engineState = 'legacy';
+      }
+    }
+    async send(o) {
+      if (this.legacy) return this.legacy.send(o);
+      const v = o.image;
+      if (!this.det || !this.cb || !v || v.readyState < 2) return;
+      let ts = performance.now(); if (ts <= this.last) ts = this.last + 1; this.last = ts;
+      const all = (this.det.detectForVideo(v, ts).landmarks) || [];
+      this.cb({ image: v, poseLandmarks: all[0] || null, multiPoseLandmarks: all });
+    }
+  }
+  window.initMediaPipePose = function () { poseEngine = new MPEngine(); poseEngine.onResults((r) => window.onPoseResults(r)); };
+
+  /* ---------- 2. Tracker: stable per-person IDs ---------- */
+  let tracks = [], nextId = 1, pinned = null, lastFrame = 0;
+  class Deb { constructor(on, off) { this.on = on; this.off = off; this.s = false; this.p = 0; this.n = 0; this.kind = null; }
+    push(v, now, kind) { if (v) { this.n = 0; this.kind = kind || this.kind; if (!this.p) this.p = now; if (now - this.p >= this.on) this.s = true; } else { this.p = 0; if (!this.n) this.n = now; if (now - this.n >= this.off) this.s = false; } } }
+  const newFall = () => ({ hist: [], hSince: 0, armed: 0, lock: 0 });
+  const bbox = (lm) => { let x0 = 9, y0 = 9, x1 = -9, y1 = -9, n = 0;
+    lm.forEach((p) => { if (p && (p.visibility === undefined || p.visibility >= 0.3)) { n++; x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); } });
+    return n >= 4 ? { x0, y0, x1, y1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: x1 - x0, h: y1 - y0 } : null; };
+  function update(all, now) {
+    const cand = all.map((lm) => ({ lm, b: bbox(lm) })).filter((c) => c.b), pairs = [], usedC = new Set(), usedT = new Set();
+    tracks.forEach((t) => cand.forEach((c, i) => { const d = Math.hypot(t.b.cx - c.b.cx, t.b.cy - c.b.cy); if (d < Math.max(0.12, 0.7 * Math.max(t.b.w, t.b.h))) pairs.push([d, t, i]); }));
+    pairs.sort((a, b) => a[0] - b[0]);
+    pairs.forEach(([d, t, i]) => { if (usedT.has(t) || usedC.has(i)) return; usedT.add(t); usedC.add(i); t.lm = cand[i].lm; t.b = cand[i].b; t.seen = now; });
+    cand.forEach((c, i) => { if (usedC.has(i) || tracks.filter((t) => now - t.seen < PRESENT_MS).length >= MAXP) return;
+      tracks.push({ id: nextId++, lm: c.lm, b: c.b, seen: now, dh: new Deb(700, 1200), dv: new Deb(700, 1200), gear: { h: 'wait', v: 'wait' }, gearTs: 0, fullTs: 0, noSince: 0,
+        reba: null, angle: null, out: false, level: 1, fall: newFall(), fallUntil: 0, cd: {} }); });
+    tracks = tracks.filter((t) => now - t.seen <= LOST_MS);
+  }
+  const present = (now) => tracks.filter((t) => now - t.seen < PRESENT_MS).sort((a, b) => a.id - b.id);
+  const sev = (t) => t.level * 10 + (t.gear.h === 'no' || t.gear.v === 'no' ? 5 : 0);
+  function pickFocus(ps) { const p = ps.find((t) => t.id === pinned); if (p) return p; return ps.slice().sort((a, b) => sev(b) - sev(a) || a.id - b.id)[0] || null; }
+
+  /* ---------- 3. Per-person judgement ---------- */
+  let bctx = null;
+  function beep() { if (!$('sw-sound') || !$('sw-sound').checked) return;
+    try { bctx = bctx || new (window.AudioContext || window.webkitAudioContext)(); if (bctx.state === 'suspended') bctx.resume();
+      const o = bctx.createOscillator(), g = bctx.createGain(), t = bctx.currentTime; o.type = 'square'; o.frequency.value = 700; o.connect(g); g.connect(bctx.destination);
+      g.gain.setValueAtTime(0.2, t); g.gain.exponentialRampToValueAtTime(0.01, t + 0.6); o.start(t); o.stop(t + 0.6); } catch (e) {} }
+  function raise(t, type, title, msg, mon) {
+    toast(t, type, title, msg);
+    if (typeof addAlarmLog === 'function') addAlarmLog('AUTO', '#' + t.id + ' ' + msg);
+    if (type === 'gear') beep(); else if (typeof playAlarmSound === 'function') playAlarmSound(type === 'fall' ? 'sos' : 'warn');
+    if (mon && window.__monAddAlert) window.__monAddAlert(Object.assign({ pid: t.id }, mon));
+  }
+  function fallStep(t, asp, now) {
+    const lm = t.lm, f = t.fall; if (now < f.lock) return false;
+    const v = (i) => lm[i] && (lm[i].visibility === undefined || lm[i].visibility >= 0.4);
+    if (!(v(11) && v(12) && v(23) && v(24))) { f.hSince = 0; return false; }
+    const sx = (lm[11].x + lm[12].x) / 2 * asp, sy = (lm[11].y + lm[12].y) / 2, hx = (lm[23].x + lm[24].x) / 2 * asp, hy = (lm[23].y + lm[24].y) / 2;
+    const tilt = Math.atan2(Math.abs(sx - hx), Math.abs(sy - hy)) * 180 / Math.PI;
+    let x0 = 9, x1 = -9, y0 = 9, y1 = -9;
+    lm.forEach((p) => { if (p && (p.visibility === undefined || p.visibility >= 0.4)) { const x = p.x * asp; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); } });
+    const horizontal = tilt >= 55 && (x1 - x0) >= (y1 - y0) * 0.9;
+    f.hist.push({ t: now, y: hy }); f.hist = f.hist.filter((h) => now - h.t <= 1200);
+    if (hy - Math.min(...f.hist.map((h) => h.y)) >= 0.18) f.armed = now + 2500;
+    if (horizontal) { if (!f.hSince) f.hSince = now; if (now - f.hSince >= 700 && now < f.armed) { f.lock = now + FALL_CD; f.hSince = 0; f.armed = 0; return true; } }
+    else f.hSince = 0;
+    return false;
+  }
+  function evalPerson(t, res, asp, now) {
+    const ready = (k) => now > (t.cd[k] || 0);
+    if (now - t.gearTs > 100 && window.__pc) {
+      t.gearTs = now; let g = null;
+      try { g = window.__pc.analyzeGear({ poseLandmarks: t.lm, image: res.image }); } catch (e) {}
+      if (g) t.fullTs = now;
+      t.dh.push(!!(g && g.helmet.ok), now, g && g.helmet.kind); t.dv.push(!!(g && g.vest.ok), now, g && g.vest.kind);
+      const seen = t.fullTs && now - t.fullTs < 2000;
+      t.gear = { h: t.dh.s ? 'ok' : (seen ? 'no' : 'wait'), v: t.dv.s ? 'ok' : (seen ? 'no' : 'wait') };
+    }
+    try { t.reba = window.computeREBAFromLandmarks ? window.computeREBAFromLandmarks(t.lm, asp) : null; } catch (e) { t.reba = null; }
+    try { t.angle = computeJointAngle(t.lm, currentJoint); } catch (e) { t.angle = null; }
+    t.out = t.angle !== null && isOutOfRange(t.angle);
+    const rebaIdx = t.reba ? t.reba.idx : 0;
+    t.level = (rebaIdx >= 3 || t.out || now < t.fallUntil) ? 3 : (rebaIdx === 2 ? 2 : 1);
+    if (!isAnalyzing) { t.noSince = 0; return; }
+    // gear missing (full body seen, no helmet / vest) for 3 s -> this person's own alert
+    if (t.gear.h === 'no' || t.gear.v === 'no') { if (!t.noSince) t.noSince = now;
+      if (now - t.noSince >= GEAR_NO_MS && ready('gear')) { t.cd.gear = now + GEAR_CD;
+        const items = [t.gear.h === 'no' ? tr('helmet') : '', t.gear.v === 'no' ? tr('vest') : ''].filter(Boolean).join(L() === 'zh' ? '、' : ', ');
+        raise(t, 'gear', tr('gearT'), tr('gearMsg', { items })); } } else t.noSince = 0;
+    // posture / joint risk
+    if (t.level === 3 && now >= t.fallUntil && ready('risk')) { t.cd.risk = now + RISK_CD;
+      const why = []; if (rebaIdx >= 3) why.push(tr('rebaWhy', { s: t.reba.score }));
+      if (t.out) why.push(tr('jointWhy', { j: i18n[L()].jointNames[currentJoint], a: t.angle }));
+      const mon = t.out ? { type: 'angle', level: 3, joint: currentJoint, angle: t.angle, lo: jointThresholds[currentJoint].lo, hi: jointThresholds[currentJoint].hi } : { type: 'posture', level: 3, score: t.reba.score, idx: t.reba.idx };
+      raise(t, 'risk', tr('riskT'), tr('riskMsg', { why: why.join(' / ') }), mon); }
+    // fall
+    if (fallStep(t, asp, now)) { t.fallUntil = now + 6000; raise(t, 'fall', tr('fallT'), tr('fallMsg'));
+      const pc = window.__pc; if (pc && !pc.fall.active && now >= pc.fall.lockUntil) { pc.fall.who = t.id; pc.startFall(false); } }
+  }
+
+  /* ---------- 4. UI: styles, panel, toasts ---------- */
+  const st = document.createElement('style');
+  st.textContent = `.mp-panel{border:1px solid #d1d5db;border-radius:12px;background:#fff;padding:8px 10px;margin-bottom:8px}
+    .mp-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:#111827}
+    .mp-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:9999px;background:#ecfeff;border:1px solid #67e8f9;color:#0e7490}
+    .mp-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin-top:6px}
+    .mp-card{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:10px;border:2px solid #10b981;background:#ecfdf5;cursor:pointer}
+    .mp-card.lv2{border-color:#f59e0b;background:#fffbeb}.mp-card.lv3,.mp-card.bad{border-color:#ef4444;background:#fef2f2}
+    .mp-card.focus{box-shadow:0 0 0 2px #06b6d4}
+    .mp-id{font-weight:900;font-size:15px;color:#0f172a;min-width:30px}
+    .mp-row{display:flex;flex-wrap:wrap;gap:4px;font-size:10px;color:#4b5563;margin-top:2px}
+    .mp-chip{padding:1px 6px;border-radius:6px;border:1px solid #d1d5db;background:#fff;font-weight:700}
+    .mp-chip.ok{color:#047857;border-color:#6ee7b7}.mp-chip.no{color:#b91c1c;border-color:#fca5a5;background:#fee2e2}.mp-chip.wt{color:#6b7280}
+    .mp-empty,.mp-hint{font-size:11px;color:#6b7280;margin-top:4px}
+    #mp-toasts{position:fixed;top:12px;right:12px;z-index:45;display:flex;flex-direction:column;gap:8px;width:min(92vw,320px)}
+    .mp-toast{background:#fff;border:2px solid #ef4444;border-radius:12px;padding:8px 10px;box-shadow:0 8px 24px rgba(220,38,38,.25);font-size:12px;animation:mpin .2s}
+    .mp-toast.gear{border-color:#f59e0b}.mp-toast b{color:#b91c1c}.mp-toast button{float:right;font-size:16px;line-height:1;color:#6b7280}
+    @keyframes mpin{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}`;
+  document.head.appendChild(st);
+  const panel = document.createElement('div'); panel.className = 'mp-panel';
+  panel.innerHTML = '<div class="mp-head"><span id="mp-title"></span><span><span id="mp-engine" class="mp-pill"></span> <span id="mp-count" class="mp-pill"></span></span></div><div id="mp-list" class="mp-list"></div><p id="mp-hint" class="mp-hint"></p>';
+  const sk = $('skeleton-panel'); sk.parentElement.insertBefore(panel, sk);
+  const tbox = document.createElement('div'); tbox.id = 'mp-toasts'; document.body.appendChild(tbox);
+  panel.addEventListener('click', (e) => { const c = e.target.closest('[data-pid]'); if (!c) return; const id = +c.dataset.pid; pinned = pinned === id ? null : id; renderPanel(performance.now(), true); });
+
+  function toast(t, type, title, msg) {
+    const key = t.id + ':' + type, old = tbox.querySelector('[data-k="' + key + '"]'); if (old) old.remove();
+    const d = document.createElement('div'); d.className = 'mp-toast ' + type; d.dataset.k = key;
+    d.innerHTML = '<button type="button" aria-label="close">×</button><div><b></b></div><div class="mp-m"></div>';
+    d.querySelector('b').textContent = '👤 #' + t.id + ' · ' + title; d.querySelector('.mp-m').textContent = msg;
+    d.querySelector('button').onclick = () => d.remove(); tbox.appendChild(d); setTimeout(() => d.remove(), TOAST_MS);
+    while (tbox.children.length > 5) tbox.firstChild.remove();
+  }
+  const gc = (s) => (s === 'ok' ? 'ok' : s === 'no' ? 'no' : 'wt');
+  let lastPanel = 0, focusId = null;
+  function renderPanel(now, force) {
+    if (!force && now - lastPanel < 250) return; lastPanel = now;
+    const ps = present(now);
+    $('mp-title').textContent = '👥 ' + tr('title'); $('mp-count').textContent = tr('count', { n: ps.length });
+    $('mp-engine').textContent = currentSourceMode === 'sim' ? tr('eSim') : engineState === 'multi' ? tr('eMulti') : engineState === 'legacy' ? tr('eLegacy') : tr('eLoad');
+    $('mp-hint').textContent = tr('hint') + (focusId ? ' · ' + tr('focus') + ' #' + focusId : '');
+    $('mp-list').innerHTML = ps.length ? ps.map((t) => `<div class="mp-card lv${t.level}${t.id === focusId ? ' focus' : ''}${t.gear.h === 'no' || t.gear.v === 'no' ? ' bad' : ''}" data-pid="${t.id}">
+      <div class="mp-id">#${t.id}</div><div><div class="mp-row"><span class="mp-chip ${gc(t.gear.h)}">⛑ ${tr('helmet')} ${tr(t.gear.h)}</span><span class="mp-chip ${gc(t.gear.v)}">🦺 ${tr('vest')} ${tr(t.gear.v)}</span></div>
+      <div class="mp-row"><span class="mp-chip">L${t.level}</span><span>REBA ${t.reba ? t.reba.score : '--'}</span><span>${t.angle === null ? '--' : t.angle}°</span>${performance.now() < t.fallUntil ? '<span class="mp-chip no">' + tr('fallMsg') + '</span>' : ''}</div></div></div>`).join('') : `<div class="mp-empty">${tr('none')}</div>`;
+  }
+
+  /* ---------- 5. Overlay on the camera canvas ---------- */
+  const BONES = [[11, 12], [11, 13], [13, 15], [12, 14], [14, 16], [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [24, 26], [26, 28], [27, 31], [28, 32]];
+  const COL = ['#10b981', '#f59e0b', '#ef4444'];
+  function draw(ps, focus) {
+    const w = poseCanvas.width, h = poseCanvas.height, c = poseCtx; c.save(); c.lineWidth = 2; c.font = 'bold 12px system-ui,sans-serif'; c.textBaseline = 'top';
+    ps.forEach((t) => {
+      const bad = t.gear.h === 'no' || t.gear.v === 'no', col = bad ? COL[2] : COL[t.level - 1];
+      if (t !== focus) { c.strokeStyle = col; c.lineWidth = 3; BONES.forEach(([a, b]) => { const p = t.lm[a], q = t.lm[b]; if (!p || !q || (p.visibility !== undefined && p.visibility < 0.4) || (q.visibility !== undefined && q.visibility < 0.4)) return;
+        c.beginPath(); c.moveTo(p.x * w, p.y * h); c.lineTo(q.x * w, q.y * h); c.stroke(); }); }
+      const b = t.b, pad = 0.015; c.strokeStyle = col; c.lineWidth = 2; c.strokeRect((b.x0 - pad) * w, (b.y0 - pad) * h, (b.w + 2 * pad) * w, (b.h + 2 * pad) * h);
+      const s = (k) => (t.gear[k] === 'ok' ? '✓' : t.gear[k] === 'no' ? '✗' : '…'), txt = `#${t.id} ⛑${s('h')} 🦺${s('v')} L${t.level}`, tw = c.measureText(txt).width + 8;
+      const lx = Math.max(0, Math.min(w - tw, (b.x0 - pad) * w)), ly = Math.max(0, (b.y0 - pad) * h - 18);
+      c.fillStyle = col; c.fillRect(lx, ly, tw, 17); c.fillStyle = '#fff'; c.fillText(txt, lx + 4, ly + 3);
+    });
+    c.restore();
+  }
+
+  /* ---------- 6. Hook into the existing pipeline (wrap, never replace) ---------- */
+  window.__MP_ACTIVE = false; window.__MP_COUNT = 0; window.__MP_LEVEL = 1;
+  window.__MP_STATES = function () { const ps = present(performance.now()); if (currentSourceMode === 'sim') return null; if (!ps.length) return { h: 'wait', v: 'wait' };
+    const agg = (k) => (ps.every((p) => p.gear[k] === 'ok') ? 'ok' : ps.some((p) => p.gear[k] === 'no') ? 'no' : 'wait'); return { h: agg('h'), v: agg('v') }; };
+  window.__MP_SUMMARY = function () { return tr('sum') + present(performance.now()).map((p) => '#' + p.id + ':L' + p.level + (p.gear.h === 'no' || p.gear.v === 'no' ? '⚠' : '')).join('  '); };
+
+  const prevRes = window.onPoseResults;
+  window.onPoseResults = function (r) {
+    if (!r || !r.multiPoseLandmarks) return prevRes.apply(this, arguments);
+    const now = performance.now(); lastFrame = now; window.__MP_ACTIVE = currentSourceMode !== 'sim';
+    update(r.multiPoseLandmarks, now);
+    const ps = present(now), asp = (typeof skeletonAspectOf === 'function') ? skeletonAspectOf(r) : 1.33;
+    ps.forEach((t) => { try { evalPerson(t, r, asp, now); } catch (e) { console.warn('person eval', e); } });
+    window.__MP_COUNT = ps.length; window.__MP_LEVEL = Math.max(1, ...ps.map((t) => t.level), (window.__pc && window.__pc.fall.active) ? 3 : 1);
+    const focus = pickFocus(ps); focusId = focus ? focus.id : null;
+    const out = prevRes.call(this, Object.assign({}, r, { poseLandmarks: focus ? focus.lm : null }));
+    try { draw(ps, focus); if (ps.length && typeof setRiskLevel === 'function') setRiskLevel(window.__MP_LEVEL); renderPanel(now); } catch (e) { console.warn('multi overlay', e); }
+    return out;
+  };
+  const prevJoint = window.handleJointAlarm;   // focus person's joint log/sound is replaced by the per-person alerts above
+  window.handleJointAlarm = function (angle, opts) { return prevJoint.call(this, angle, window.__MP_ACTIVE ? Object.assign({}, opts, { silent: true }) : opts); };
+  const prevToggle = window.toggleAnalysis;
+  window.toggleAnalysis = function () { const was = isAnalyzing, r = prevToggle.apply(this, arguments); if (!was && isAnalyzing) tracks.forEach((t) => { t.cd = {}; t.noSince = 0; t.fall = newFall(); }); return r; };
+  const prevSrc = window.handleSourceChange;
+  window.handleSourceChange = function () { const r = prevSrc.apply(this, arguments); tracks = []; window.__MP_ACTIVE = false; renderPanel(performance.now(), true); return r; };
+  const prevLang = window.setLanguage;
+  window.setLanguage = function () { const r = prevLang.apply(this, arguments); renderPanel(performance.now(), true); return r; };
+  setInterval(() => { const now = performance.now(); if (now - lastFrame > 2000 && window.__MP_ACTIVE) { window.__MP_ACTIVE = false; window.__MP_COUNT = 0; } renderPanel(now, true); }, 1000);
+  renderPanel(performance.now(), true);
+})();
+  </script>
+  <!-- ================= 多人同时识别模块 END ================= -->
 </body>
 </html>
