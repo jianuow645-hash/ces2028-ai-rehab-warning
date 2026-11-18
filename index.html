@@ -72,9 +72,8 @@
       background: #9ca3af;
     }
   </style>
-  <!-- Skeleton pose side panel: self-contained styles (independent of the light theme) -->
+  <!-- Skeleton pose panel: self-contained styles (independent of the light theme). Now stacked below the anomaly-detection module for top/bottom comparison. -->
   <style id="skeleton-panel-style">
-    .skel-row { display: flex; flex-direction: column; gap: 12px; }
     .skel-panel {
       display: flex; flex-direction: column;
       width: 100%; height: 240px;
@@ -90,10 +89,6 @@
       font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
     }
     .skel-info .skel-key { display: inline-block; min-width: 3.2em; color: #ffffff; }
-    @media (min-width: 640px) {
-      .skel-row { flex-direction: row; align-items: stretch; }
-      .skel-panel { width: 176px; flex: 0 0 176px; height: auto; }
-    }
   </style>
   <!-- ================= 新增代码区域 START：REBA 模块 (CSS，独立 reba- 前缀) ================= -->
   <style id="reba-module-style">
@@ -207,8 +202,6 @@
             </span>
           </div>
 
-          <!-- Flex row: original video/pose canvas (left) + skeleton panel (right) -->
-          <div class="skel-row">
           <!-- Video Stream Canvas Stack -->
           <div class="relative w-full aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center group">
             
@@ -237,18 +230,6 @@
               <span id="txt-privacy-notice">视频画面与33个关键点数据均在本地浏览器内实时处理，不上传云端，仅输出告警信号。</span>
             </div>
           </div>
-
-          <!-- Skeleton-only panel (new) -->
-          <aside id="skeleton-panel" class="skel-panel" aria-label="Skeleton pose panel">
-            <div class="skel-canvas-wrap">
-              <canvas id="skeletonCanvas"></canvas>
-            </div>
-            <div id="angleInfo" class="skel-info">
-              <div><span class="skel-key">몸통</span><span id="skelTorsoVal">--</span>°</div>
-              <div><span class="skel-key">팔</span><span id="skelArmVal">--</span>°</div>
-            </div>
-          </aside>
-          </div><!-- /skel-row -->
 
           <!-- Controls Bar -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -289,6 +270,17 @@
               <span id="tag-hyperflexion" class="px-2 py-1 rounded bg-white text-gray-600 border border-gray-300">膝过度屈曲</span>
             </div>
           </div>
+
+          <!-- Skeleton-only panel (moved: directly below the pose anomaly detection module) -->
+          <aside id="skeleton-panel" class="skel-panel" aria-label="Skeleton pose panel">
+            <div class="skel-canvas-wrap">
+              <canvas id="skeletonCanvas"></canvas>
+            </div>
+            <div id="angleInfo" class="skel-info">
+              <div><span class="skel-key">몸통</span><span id="skelTorsoVal">--</span>°</div>
+              <div><span class="skel-key">팔</span><span id="skelArmVal">--</span>°</div>
+            </div>
+          </aside>
 
         </div>
       </div>
@@ -3035,4 +3027,3 @@
   <!-- ================= 新增代码区域 END：庆云大学监测数据流模块 (JS) ================= -->
 </body>
 </html>
-'
